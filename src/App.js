@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import CourseCard from './components/CourseCard';
 import { BrowserRouter } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import Navigation from './components/Navigation';
+import CourseCard from './components/CourseCard';
 
 function App() {
   // 1. Létrehozunk egy állapotot (state) a kurzusoknak, alapból üres tömb
@@ -23,22 +25,34 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="flex min-h-screen bg-gray-50">
-        {/* Sidebar rész... */}
-        
-        <main className="flex-1 p-8">
-          <h1 className="text-3xl font-bold mb-8">My Courses (From PHP)</h1>
-          
-          {isLoading ? (
-            <div className="flex justify-center italic text-gray-500">Adatok betöltése...</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map(course => (
-                <CourseCard key={course.id} {...course} />
-              ))}
-            </div>
-          )}
-        </main>
+      <div className="flex min-h-screen bg-gray-50 flex flex-col">
+        {/* FELSŐ NAVIGÁCIÓ */}
+        <Navigation />
+
+        <div className='flex flex-1'>
+          {/* OLDALSÓ MENÜ */}
+          <Sidebar />
+
+          {/* FŐ TARTALOM */}
+          <main className="flex-1 p-8">
+           <header className="mb-8">
+             <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
+             <p className="text-gray-600 mt-1">Here's what's happening with your courses today.</p>
+           </header>
+
+           {isLoading ? (
+             <div className="flex justify-center items-center h-64">
+               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+             </div>
+           ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+               {courses.map(course => (
+                 <CourseCard key={course.id} {...course} />
+               ))}
+             </div>
+            )}
+          </main>
+        </div>
       </div>
     </BrowserRouter>
   );
