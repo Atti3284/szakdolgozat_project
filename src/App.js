@@ -1,3 +1,4 @@
+/*
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
@@ -26,14 +27,14 @@ function App() {
   return (
     <BrowserRouter>
       <div className="flex min-h-screen bg-gray-50 flex flex-col">
-        {/* FELSŐ NAVIGÁCIÓ */}
+        {/* FELSŐ NAVIGÁCIÓ }
         <Navigation />
 
         <div className='flex flex-1'>
-          {/* OLDALSÓ MENÜ */}
+          {/* OLDALSÓ MENÜ }
           <Sidebar />
 
-          {/* FŐ TARTALOM */}
+          {/* FŐ TARTALOM }
           <main className="flex-1 p-8">
            <header className="mb-8">
              <h1 className="text-3xl font-bold text-gray-900">Welcome back, John!</h1>
@@ -58,4 +59,20 @@ function App() {
   );
 }
 
+export default App;*/
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import Dashboard from './components/Dashboard'; // Kiszervezzük a főoldalt
+import CoursePage from './components/CoursePage';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/course/:courseId" element={<CoursePage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
 export default App;
