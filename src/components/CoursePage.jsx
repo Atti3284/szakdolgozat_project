@@ -28,8 +28,40 @@ export default function CoursePage() {
       });
   }, [courseId]); // Ha megváltozik az ID az URL-ben, fusson le újra
 
+  // 4. Lecke állapotának frissítése (Update - POST kérés a PHP-nak)
+  const toggleLessonComplete = () => {
+    const currentLesson = lessons[selectedLesson];
+    if (!currentLesson) return;
+
+    // Ha 1 (true), akkor 0 (false) lesz, és fordítva
+    const newStatus = currentLesson.completed == 1 ? 0 : 1;
+
+    fetch('http://localhost/edulearn_api/update_lesson.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lessonId: currentLesson.id,
+        completed: newStatus
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === 'success') {
+        // Lokális frissítés, hogy azonnal látszódjon a változás a pipánál
+        const updatedLessons = [...lessons];
+        updatedLessons[selectedLesson].completed = newStatus;
+        setLessons(updatedLessons);
+      }
+    })
+    .catch(err => console.error("Hiba a mentéskor:", err));
+  };
+
   if (isLoading) {
-    return <div className="p-10 text-center">Betöltés...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   return (
@@ -59,13 +91,15 @@ export default function CoursePage() {
                           selectedLesson === index ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
                         }`}
                       >
-                        {parseInt(lesson.completed) ? (
+                        {/* Pipa ikon állapottól függően */}
+                        {parseInt(lesson.completed) === 1 ? (
                           <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
                         ) : (
                           <Circle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
                         )}
+
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm text-gray-900 mb-1">{lesson.title}</div>
+                          <div className="text-sm font-medium text-gray-900 mb-1 truncate">{lesson.title}</div>
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             <Clock className="w-3 h-3" />
                             <span>{lesson.duration}</span>
@@ -81,14 +115,45 @@ export default function CoursePage() {
             </div>
 
             {/* Jobb oldali tartalom (Videó helye) */}
-            <div className="flex-1 overflow-y-auto bg-white p-8">
-               <div className="bg-gray-900 rounded-xl aspect-video flex items-center justify-center mb-6">
-                  <Play className="w-16 h-16 text-blue-600 fill-current" />
-               </div>
-               <h2 className="text-3xl font-bold mb-4">
-                  {lessons[selectedLesson]?.title || "Válassz egy leckét"}
-               </h2>
-               <p className="text-gray-600">Itt jelenik meg a lecke részletes leírása a PHP/MySQL-ből...</p>
+            <div className="flex-1 overflow-y-auto bg-white">
+              <div className="p-8 max-2-4xl mx-auto">
+                {/* Videó "lejátszó" (Placeholder) */}
+                <div className="bg-gray-900 rounded-2xl aspect-video flex items-center justify-center mb-8 shadow-2xl relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+                  <button className="flex items-center justify-center w-20 h-20 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-transform hover:scale-110 z-10 shadow-lg">
+                    <Play className="w-10 h-10 ml-1 fill-current" />
+                  </button>
+                </div>
+
+                {/* Lecke információk */}
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                    {lessons[selectedLesson]?.title || "Válassz egy leckét"}
+                  </h2>
+                  <p className="text-gray-600 leading-relaxed text-lg">
+                    Üdvözöljük ebben a leckében! Itt mélyebben megismerkedhetsz a témával. 
+                    A haladásodat bármikor rögzítheted az alábbi gombbal, ami frissíti az adatbázist.
+                  </p>
+                </div>
+                
+                {/* Akció gombok */}
+                <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
+                  <button 
+                    onClick={toggleLessonComplete}
+                    className={`px-8 py-3 rounded-xl font-semibold transition-all shadow-md ${
+                      lessons[selectedLesson]?.completed == 1
+                        ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
+                    }`}
+                  >
+                    {lessons[selectedLesson]?.completed == 1 ? 'Completed ✓' : 'Mark as Completed'}
+                  </button>
+                  
+                  <button className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl transition-all">
+                    Next Lesson →
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </main>
