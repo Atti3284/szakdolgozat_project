@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navigation from './Navigation';
 import Sidebar from './Sidebar';
 import CourseCard from './CourseCard';
-import { BookOpen, CheckCircle, Trophy } from 'lucide-react';
+import { BookOpen, CheckCircle } from 'lucide-react';
 
 export default function Dashboard() {
   const [courses, setCourses] = useState([]);
