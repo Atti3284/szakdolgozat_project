@@ -53,7 +53,9 @@ useEffect(() => {
           </header>
 
           {/* STATISZTIKA KÁRTYÁK */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            
+            {/* 1. Kártya: Kurzusaim */}
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
               <div className="p-3 gb-blue-100 rounded-lg text-blue-600">
                 <BookOpen className="w-6 h-6" />
@@ -64,6 +66,7 @@ useEffect(() => {
               </div>
             </div>
 
+            {/* 2. Kártya: Befejezett leckék */}
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
               <div className="p-3 bg-green-100 rounded-lg text-green-600">
                 <CheckCircle className="w-6 h-6" />
@@ -71,16 +74,6 @@ useEffect(() => {
               <div>
                 <p className="text-sm text-gray-500 uppercase font semibold">Befejezett leckék</p>
                 <p className="text-2xl font-bold text-gray-900">{stats.completedLessons}</p>
-              </div>
-            </div>
-
-            <div>
-              <div>
-                <Trophy className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 uppercase font-semibold">Szinted</p>
-                <p className="text-2xl font-bold text-gray-900">Haladó</p>
               </div>
             </div>
           </div>
