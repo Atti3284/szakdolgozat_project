@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navigation from './Navigation';
 import Sidebar from './Sidebar';
-import { CheckCircle2, Circle, FileText, Play, Clock } from 'lucide-react';
+import { CheckCircle2, Circle, Play, Clock } from 'lucide-react';
 
 export default function CoursePage() {
   // 1. Kiszedjük az URL-ből az ID-t (pl. /course/1 -> courseId = 1)
@@ -33,8 +33,10 @@ export default function CoursePage() {
     const currentLesson = lessons[selectedLesson];
     if (!currentLesson) return;
 
+    // Szigorú összehasonlítás (Number-ré alakítva a biztonság kedvéért)
+    const currentStatus = Number(currentLesson.completed);
     // Ha 1 (true), akkor 0 (false) lesz, és fordítva
-    const newStatus = currentLesson.completed == 1 ? 0 : 1;
+    const newStatus = currentStatus === 1 ? 0 : 1;
 
     fetch('http://localhost/edulearn_api/update_lesson.php', {
       method: 'POST',
@@ -67,8 +69,10 @@ export default function CoursePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navigation />
+
       <div className="flex">
         <Sidebar />
+
         <main className="flex-1">
           {/* Kurzus címe (egyelőre statikus, vagy lekérhetjük egy másik API-ból) */}
           <div className="bg-white border-b border-gray-200 px-8 py-6">
@@ -141,12 +145,12 @@ export default function CoursePage() {
                   <button 
                     onClick={toggleLessonComplete}
                     className={`px-8 py-3 rounded-xl font-semibold transition-all shadow-md ${
-                      lessons[selectedLesson]?.completed == 1
+                      lessons[selectedLesson]?.completed === 1
                         ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200' 
                         : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
                     }`}
                   >
-                    {lessons[selectedLesson]?.completed == 1 ? 'Completed ✓' : 'Mark as Completed'}
+                    {Number(lessons[selectedLesson]?.completed) === 1 ? 'Completed ✓' : 'Mark as Completed'}
                   </button>
                   
                   <button className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl transition-all">
