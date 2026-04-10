@@ -9,6 +9,7 @@ import Assignments from './components/Assignments';
 import MyCourses from './components/MyCourses';
 import { AuthProvider } from './context/AuthContext';
 import Login from './components/Login';
+import Register from './components/Register';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/messages" element={<Messages />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/login" element={<Login/>} />
+          <Route path="/register" element={<Register/>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

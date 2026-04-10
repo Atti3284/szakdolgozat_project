@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -22,17 +22,36 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Edulearn Belépés</h2>
+        
         <input 
-          type="email" placeholder="Email" className="w-full p-2 mb-4 border rounded"
-          onChange={(e) => setEmail(e.target.value)} 
+          type="email"
+          placeholder="Email"
+          className="w-full p-2 mb-4 border rounded"
+          onChange={(e) => setEmail(e.target.value)}
+          required
         />
+        
         <input 
-          type="password" placeholder="Jelszó" className="w-full p-2 mb-6 border rounded"
-          onChange={(e) => setPassword(e.target.value)} 
+          type="password"
+          placeholder="Jelszó"
+          className="w-full p-2 mb-6 border rounded"
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
+        
         <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
           Belépés
         </button>
+
+        {/* REGISZTRÁCIÓS LINK */}
+        <div className="mt-6 text-center border-t pt-4">
+          <p className="text-sm text-gray-600">
+            Még nincs fiókod?{' '}
+            <Link to="/register" className="text-blue-600 hover:underline font-medium">
+              Regisztrálj itt!
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );
