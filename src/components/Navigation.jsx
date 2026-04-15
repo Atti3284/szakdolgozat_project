@@ -34,16 +34,38 @@ export default function Navigation() {
             </button>
           </div>
 
-          {/* Profile Name and PFP */}
-          <div className="flex items-center gap-3">
-            <div className="text-right">
-              <p className="text-sm font-bold text-gray-900">{currentUser?.full_name || 'Vendég'}</p>
-              <p className="text-xs text-gray-500 capitalize">{currentUser?.role || 'Guest'}</p>
+          {/* Profile Name and PFP - DINAMIKUS ADATOKKAL */}
+          <div className="flex items-center gap-4">
+            <button className="p-2 text-gray-400 hover:text-gray-600">
+              <Bell className="w-5 h-5" />
+            </button>
+            
+            <div className="flex items-center gap-3 pl-4 border-l">
+              <div className="text-right hidden sm:block">
+                {/* A dbData-ból kérjük le a valódi nevet és szerepkört */}
+                <p className="text-sm font-bold text-gray-900 leading-tight">
+                  {currentUser?.dbData?.full_name || currentUser?.email || 'Vendég'}
+                </p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {currentUser?.dbData?.role || 'Guest'}
+                </p>
+              </div>
+
+              {/* Profilkép vagy Monogram */}
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border border-gray-200 overflow-hidden">
+                {currentUser?.dbData?.avatar_url ? (
+                  <img 
+                    src={currentUser.dbData.avatar_url} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <span className="text-blue-600 font-bold">
+                    {(currentUser?.dbData?.full_name || 'V').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
             </div>
-            <img 
-              src={currentUser?.avatar || 'default_avatar_url'} 
-              className="w-10 h-10 rounded-full border border-gray-200"
-            />
           </div>
         </div>
       </div>

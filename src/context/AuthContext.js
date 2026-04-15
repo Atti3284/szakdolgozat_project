@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
-  useEffect(() => {
+/*  useEffect(() => {
     // Ez a függvény figyeli a Firebase állapotát (be van-e lépve valaki)
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -35,6 +35,29 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
+    return unsubscribe;
+  }, []);*/
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        // Lekérjük a MySQL-ből a kiegészítő adatokat
+        try {
+          const res = await fetch(`http://localhost/edulearn_api/get_user_profile.php?uid=${firebaseUser.uid}`);
+          const mysqlData = await res.json();
+          
+          setCurrentUser({
+            ...firebaseUser,
+            dbData: mysqlData // Itt lesz a full_name, role, stb.
+          });
+        } catch (err) {
+          console.error("MySQL profil hiba:", err);
+          setCurrentUser(firebaseUser);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+      setLoading(false);
+    });
     return unsubscribe;
   }, []);
 
