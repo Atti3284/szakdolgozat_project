@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { auth } from '../firebase'; // Importáljuk a configot
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { setPersistence, browserSessionPersistence } from "firebase/auth";
 
 const AuthContext = createContext();
 
@@ -10,7 +11,10 @@ export function AuthProvider({ children }) {
 
   // Bejelentkezés funkció
   function login(email, password) {
-    return signInWithEmailAndPassword(auth, email, password);
+    return setPersistence(auth, browserSessionPersistence)
+      .then(() => {
+        return signInWithEmailAndPassword(auth, email, password);
+      });
   }
 
   // Kijelentkezés funkció

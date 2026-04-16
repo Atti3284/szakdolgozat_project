@@ -36,7 +36,7 @@ export default function AllCourses() {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-8">
-          {/* Üdvözlés - Dinamikus névvel */}
+          {/* kis szöveg*/}
           <header className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900">
               Összes elérhető kurzus
