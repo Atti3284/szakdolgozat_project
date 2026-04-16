@@ -18,25 +18,6 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
-/*  useEffect(() => {
-    // Ez a függvény figyeli a Firebase állapotát (be van-e lépve valaki)
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Itt majd később összekötjük a saját MySQL adatbázisoddal is!
-        setCurrentUser({
-          uid: user.uid,
-          email: user.email,
-          full_name: user.displayName || user.email.split('@')[0],
-          role: 'student' // Alapértelmezett szerepkör
-        });
-      } else {
-        setCurrentUser(null);
-      }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);*/
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
