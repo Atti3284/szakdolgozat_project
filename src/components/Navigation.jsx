@@ -60,24 +60,30 @@ export default function Navigation() {
               onClick={() => setIsProfileOpen(!isProfileOpen)}>
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                  {currentUser?.dbData?.full_name || 'Vendég'}
+                  {/* 1. Ha van teljes név, azt írjuk ki. 
+                      2. Ha nincs, vesszük az emailt, és levágjuk a @ utáni részt. 
+                      3. Ha semmi nincs, akkor marad a 'Tanuló' */}
+                  {currentUser?.dbData?.full_name || 
+                  (currentUser?.email ? currentUser.email.split('@')[0] : 'Tanuló')}
                 </p>
+                
                 <p className="text-xs text-gray-500 capitalize">
-                  {currentUser?.dbData?.role || 'Guest'}
+                  {/* Ha a role 'student' vagy nincs megadva, írjuk ki hogy 'Diák' 
+                      Ha 'teacher', akkor 'Tanár' */}
+                  {currentUser?.dbData?.role === 'student' || !currentUser?.dbData?.role 
+                    ? 'Diák' 
+                    : (currentUser?.dbData?.role === 'teacher' ? 'Tanár' : currentUser.dbData.role)}
                 </p>
               </div>
 
               {/* Profilkép vagy Monogram */}
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border border-gray-200 overflow-hidden">
                 {currentUser?.dbData?.avatar_url ? (
-                  <img 
-                    src={currentUser.dbData.avatar_url} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover" 
-                  />
+                  <img src={currentUser.dbData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-blue-600 font-bold">
-                    {(currentUser?.dbData?.full_name || 'V').charAt(0).toUpperCase()}
+                    {/* Elsőnek a full_name első betűje, ha nincs, akkor az email első betűje */}
+                    {(currentUser?.dbData?.full_name || currentUser?.email || 'T').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
