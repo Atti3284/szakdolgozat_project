@@ -14,17 +14,16 @@ export default function Dashboard() {
 useEffect(() => {
 
     const fetchData = async () => {
-      if (!currentUser?.uid) return;
+      setIsLoading(true);
 
       // 1. KURZUSOK LEKÉRÉSE
-      setIsLoading(true);
       try {
-        const res = await fetch(`http://localhost/edulearn_api/get_active_courses.php?uid=${currentUser.uid}`);
+        const res = await fetch(`http://localhost/edulearn_api/get_courses.php?uid=${currentUser?.uid || ''}`);
         if (!res.ok) throw new Error('Hiba a kurzusok lekérésekor');
         const data = await res.json();
         setCourses(data);
       } catch (error) {
-        console.error("Dashboard kurzus hiba:", error);
+        console.error("Kurzus hiba:", error);
       }
 
       // 2. STATISZTIKÁK LEKÉRÉSE
@@ -58,7 +57,7 @@ useEffect(() => {
             <h1 className="text-3xl font-bold text-gray-900">
               Üdvözlünk újra, {currentUser?.dbData?.full_name || 'Tanuló'}!
             </h1>
-            <p className="text-gray-600 mt-1">Íme a jelenlegi a haladásod.</p>
+            <p className="text-gray-600 mt-1">Íme a jelenlegi kurzusaid és a haladásod.</p>
           </header>
 
           {/* STATISZTIKA KÁRTYÁK */}
@@ -100,15 +99,7 @@ useEffect(() => {
                   <CourseCard key={course.id} {...course} />
                 ))
               ) : (
-                <div className="col-span-full bg-white p-10 rounded-xl border border-dashed border-gray-300 text-center">
-                  <p className="text-gray-500 mb-4">Úgy tűnik, az elmúlt héten nem foglalkoztál kurzusokkal.</p>
-                  <button 
-                    onClick={() => navigate('/all-courses')} // Ezt mindjárt megcsináljuk
-                    className="text-blue-600 font-semibold hover:underline"
-                  >
-                    Böngéssz az összes kurzus között →
-                  </button>
-                </div>
+                <p className="text-gray-500 italic">Jelenleg nincsenek elérhető kurzusok.</p>
               )}
             </div>
           )}

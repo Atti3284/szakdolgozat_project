@@ -1,4 +1,4 @@
-import { FileText, MessageSquare } from 'lucide-react';
+import { FileText, MessageSquare, Grid } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Sidebar() {
