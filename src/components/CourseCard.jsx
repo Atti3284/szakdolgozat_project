@@ -16,14 +16,19 @@ export default function CourseCard({
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
+  //Vendégellenőrző segédfüggvény
+  const checkGuest = () => {
+    if (currentUser?.dbData?.role === 'guest'){
+      alert("Ez a funkció nem elérhető. Kérjük, jelentkezzen be!");
+      navigate('/login');
+      return true;
+    }
+    return false;
+  };
+
   const handleEnroll = async (e) => {
     e.stopPropagation(); // Megakadályozza, hogy a kártyára való kattintás is lefusson
-    
-    if (!currentUser?.uid) {
-      alert("Kérlek, jelentkezz be a feliratkozáshoz!");
-      navigate('/login');
-      return;
-    }
+    if (checkGuest()) return;
 
     console.log("Jelentkezés folyamatban...", currentUser.uid);
 
@@ -51,7 +56,9 @@ export default function CourseCard({
 
   return (
     <div
-      onClick={() => navigate(`/course/${id}`)}
+      onClick={() => {
+        if (!checkGuest()) navigate(`/course/${id}`);
+      }}
       className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
     >
       {/* Kurzus Kép */}

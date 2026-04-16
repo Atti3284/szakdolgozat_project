@@ -16,6 +16,11 @@ import Register from './components/Register';
 function AppRoutes() {
   const { currentUser, loading } = useAuth();
 
+  //Segédváltozó a jogusultságok egyszerűbb kezeléséhez
+  const isGuest = currentUser?.dbData?.role === 'guest';
+  const isLoggedIn = !!currentUser; // true, ha van bármilyen user (vendég is)
+  const isRealUser = isLoggedIn && !isGuest; // true, ha regisztrált user
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -26,49 +31,27 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* ALAPÉRTELMEZETT ÚTVONAL: Ha be van lépve -> Dashboard, ha nincs -> Login */}
+      {/* ALAPÉRTELMEZETT ÚTVONAL */}
       <Route path="/" element={
-        currentUser ? <Navigate to="/dashboard" /> : <Navigate to="/login" />
+        isRealUser ? <Navigate to="/dashboard" /> : (isGuest ? <Navigate to="/all-courses" /> : <Navigate to="/login" />)
       } />
       
       {/* PUBLIKUS ÚTVONALAK */}
-      <Route path="/login" element={
-        !currentUser ? <Login /> : <Navigate to="/dashboard" />
-      } />
-      <Route path="/register" element={
-        !currentUser ? <Register /> : <Navigate to="/dashboard" />
-      } />
+      <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/" /> } />
+      <Route path="/register" element={!isLoggedIn ? <Register /> : <Navigate to="/" /> } />
       
-      {/* VÉDETT ÚTVONALAK: Ha nincs currentUser, visszadob a Loginra */}
-      <Route path="/dashboard" element={
-        currentUser ? <Dashboard /> : <Navigate to="/login" />
-      } />
-      
-      <Route path="/all-courses" element={
-        currentUser ? <AllCourses /> : <Navigate to="/login" />
-      } />
+      {/* VENDÉGEKNEK IS ELÉRHETŐ */}
+      <Route path="/all-courses" element={isLoggedIn ? <AllCourses /> : <Navigate to="/login" /> } />
 
-      <Route path="/my-courses" element={
-        currentUser ? <MyCourses /> : <Navigate to="/login" />
-      } />
+      {/* CSAK REGISZTRÁLT FELHASZNÁLÓKNAK (Védett a vendégektől is) */}
+      <Route path="/dashboard" element={isRealUser ? <Dashboard /> : <Navigate to="/login" /> } />
+      <Route path="/my-courses" element={isRealUser ? <MyCourses /> : <Navigate to="/login" /> } />
+      <Route path="/course/:courseId" element={isRealUser ? <CoursePage /> : <Navigate to="/login" /> } />
+      <Route path="/assignments" element={isRealUser ? <Assignments /> : <Navigate to="/login" /> } />
+      <Route path="/messages" element={isRealUser ? <Messages /> : <Navigate to="/login" /> } />
+      <Route path="/calendar" element={isRealUser ? <Calendar /> : <Navigate to="/login" /> } />
 
-      <Route path="/course/:courseId" element={
-        currentUser ? <CoursePage /> : <Navigate to="/login" />
-      } />
-
-      <Route path="/assignments" element={
-        currentUser ? <Assignments /> : <Navigate to="/login" />
-      } />
-
-      <Route path="/messages" element={
-        currentUser ? <Messages /> : <Navigate to="/login" />
-      } />
-
-      <Route path="/calendar" element={
-        currentUser ? <Calendar /> : <Navigate to="/login" />
-      } />
-
-      {/* 404 - Ha olyan oldalra megy, ami nem létezik */}
+      {/* 404 */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

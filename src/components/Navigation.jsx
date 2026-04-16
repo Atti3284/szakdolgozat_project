@@ -17,6 +17,15 @@ export default function Navigation() {
     }
   };
 
+  //Segédfüggvény a stílushoz és a kattintáshoz
+  const navButtonStyle = (isActive) => `transition-colors text-sm font-medium ${
+    !isActive 
+      ? 'text-gray-300 cursor-not-allowed' 
+      : 'text-gray-700 hover:text-blue-600'
+  }`;
+
+  const isGuest = currentUser?.dbData?.role === 'guest';
+
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
       <div className="px-6 py-4">
@@ -33,18 +42,18 @@ export default function Navigation() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
             <button 
-              onClick={() => navigate('/dashboard')}
-              className="text-gray-700 hover:text-blue-600 transition-colors">
+              onClick={() => !isGuest && navigate('/dashboard')}
+              className={navButtonStyle(!isGuest)}>
               Dashboard
             </button>
             <button 
-              onClick={() => navigate('/my-courses')}
-              className="text-gray-700 hover:text-blue-600 transition-colors">
+              onClick={() =>  !isGuest && navigate('/my-courses')}
+              className={navButtonStyle(!isGuest)}>
               My Courses
             </button>
             <button 
-              onClick={() => navigate('/calendar')}
-              className="text-gray-700 hover:text-blue-600 transition-colors">
+              onClick={() => !isGuest && navigate('/calendar')}
+              className={navButtonStyle(!isGuest)}>
               Calendar
             </button>
           </div>
@@ -58,21 +67,19 @@ export default function Navigation() {
             <div
               className="flex items-center gap-3 pl-4 border-l cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setIsProfileOpen(!isProfileOpen)}>
+
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-900 leading-tight">
                   {/* 1. Ha van teljes név, azt írjuk ki. 
                       2. Ha nincs, vesszük az emailt, és levágjuk a @ utáni részt. 
                       3. Ha semmi nincs, akkor marad a 'Tanuló' */}
-                  {currentUser?.dbData?.full_name || 
-                  (currentUser?.email ? currentUser.email.split('@')[0] : 'Tanuló')}
+                  {currentUser?.dbData?.full_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Vendég')}
                 </p>
                 
                 <p className="text-xs text-gray-500 capitalize">
                   {/* Ha a role 'student' vagy nincs megadva, írjuk ki hogy 'Diák' 
                       Ha 'teacher', akkor 'Tanár' */}
-                  {currentUser?.dbData?.role === 'student' || !currentUser?.dbData?.role 
-                    ? 'Diák' 
-                    : (currentUser?.dbData?.role === 'teacher' ? 'Tanár' : currentUser.dbData.role)}
+                  {currentUser?.dbData?.role === 'teacher' ? 'Tanár' : (isGuest ? 'Vendég' : 'Diák')}
                 </p>
               </div>
 
@@ -83,37 +90,43 @@ export default function Navigation() {
                 ) : (
                   <span className="text-blue-600 font-bold">
                     {/* Elsőnek a full_name első betűje, ha nincs, akkor az email első betűje */}
-                    {(currentUser?.dbData?.full_name || currentUser?.email || 'T').charAt(0).toUpperCase()}
+                    {(currentUser?.dbData?.full_name || currentUser?.email || 'V').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
+
+              {/* --- DROP DOWN ABLAK --- */}
+              {isProfileOpen && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
+                  {isGuest ? (
+                    <button 
+                      onClick={() => { logout(); navigate('/login'); }} 
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors font-semibold"
+                    >
+                      <LogOut className="w-5 h-5"/> 
+                      <span>Bejelentkezés</span>
+                    </button>
+                  ) : (  
+                    <>
+                      <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        <User className="w-4 h-4" /> Profilom
+                      </button>
+                      <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                        <Settings className="w-4 h-4" /> Beállítások
+                      </button>
+                      <div className="border-t border-gray-100 mt-2 pt-2">
+                        <button 
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" /> Kijelentkezés
+                        </button>
+                      </div>
+                    </>
+                  )}   
+                </div>
+              )}
             </div>
-
-            {/* --- DROP DOWN ABLAK --- */}
-            {isProfileOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50 animate-in fade-in slide-in-from-top-1">
-                <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-xs text-gray-400 font-semibold uppercase">Fiók</p>
-                </div>
-                
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <User className="w-4 h-4" /> Profilom
-                </button>
-                
-                <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <Settings className="w-4 h-4" /> Beállítások
-                </button>
-
-                <div className="border-t border-gray-100 mt-2 pt-2">
-                  <button 
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" /> Kijelentkezés
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -121,7 +134,7 @@ export default function Navigation() {
 
       {isProfileOpen && (
         <div
-          className="fixed inset-0 z-[-1]"
+          className="fixed inset-0 z-[40]"
           onClick={() => setIsProfileOpen(false)}>
         </div>
       )}

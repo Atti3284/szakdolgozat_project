@@ -12,41 +12,55 @@ export function AuthProvider({ children }) {
   // Bejelentkezés funkció
   function login(email, password) {
     return setPersistence(auth, browserSessionPersistence)
-      .then(() => {
-        return signInWithEmailAndPassword(auth, email, password);
-      });
+      .then(() => signInWithEmailAndPassword(auth, email, password));
   }
 
   // Kijelentkezés funkció
-  function logout() {
-    return signOut(auth);
+  async function logout() {
+    await signOut(auth);
+    setCurrentUser(null);
   }
+
+  // Vendég funkció
+  function loginAsGuest() {
+  setCurrentUser({
+    uid: 'guest_user',
+    email: 'guest@edulearn.com',
+    dbData: {
+      full_name: 'Vendég',
+      role: 'guest'
+    }
+  });
+}
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // Ha vendéglént vagyunk bent, ne csináljon semmit a Firebase figyelő
+      if (currentUser?.uid === 'guest_user') return;
+      
       if (firebaseUser) {
         // Lekérjük a MySQL-ből a kiegészítő adatokat
         try {
           const res = await fetch(`http://localhost/edulearn_api/get_user_profile.php?uid=${firebaseUser.uid}`);
           const mysqlData = await res.json();
           
-          setCurrentUser({
-            ...firebaseUser,
-            dbData: mysqlData // Itt lesz a full_name, role, stb.
-          });
+          setCurrentUser({ ...firebaseUser, dbData: mysqlData });// Itt lesz a full_name, role, stb.
         } catch (err) {
           console.error("MySQL profil hiba:", err);
           setCurrentUser(firebaseUser);
         }
       } else {
-        setCurrentUser(null);
+        // Ha nincs Firebase user és nem is vendég vagyunk
+        if (currentUser?.uid !== 'guest_user') {
+          setCurrentUser(null);
+        }
       }
       setLoading(false);
     });
     return unsubscribe;
-  }, []);
+  }, [currentUser?.uid]);
 
-  const value = { currentUser, login, logout };
+  const value = { currentUser, login, logout, loginAsGuest };
 
   return (
     <AuthContext.Provider value={value}>
