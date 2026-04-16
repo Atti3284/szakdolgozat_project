@@ -1,4 +1,4 @@
-import { LayoutDashboard, BookOpen, FileText, MessageSquare, Calendar } from 'lucide-react';
+import { FileText, MessageSquare } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Sidebar() {
@@ -6,11 +6,9 @@ export default function Sidebar() {
   const location = useLocation();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-    { icon: BookOpen, label: 'My Courses', path: '/my-courses' }, // Ez is mehet a dashboardra, mert ott vannak a kurzusok
+    { icon: Grid, label: 'All Courses', path: '/all-courses' },
     { icon: FileText, label: 'Assignments', path: '/assignments' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
-    { icon: Calendar, label: 'Calendar', path: '/calendar' }, // Ha van ilyen ikonod
   ];
 
   return (

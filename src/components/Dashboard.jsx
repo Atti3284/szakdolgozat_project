@@ -4,7 +4,6 @@ import Sidebar from './Sidebar';
 import CourseCard from './CourseCard';
 import { BookOpen, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();

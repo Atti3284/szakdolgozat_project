@@ -26,10 +26,14 @@ export default function Navigation() {
             >
               Dashboard
             </button>
-            <button className="text-gray-700 hover:text-blue-600 transition-colors">
+            <button 
+              onClick={() => navigate('/my-courses')}
+              className="text-gray-700 hover:text-blue-600 transition-colors">
               My Courses
             </button>
-            <button className="text-gray-700 hover:text-blue-600 transition-colors">
+            <button 
+              onClick={() => navigate('/calendar')}
+              className="text-gray-700 hover:text-blue-600 transition-colors">
               Calendar
             </button>
           </div>
