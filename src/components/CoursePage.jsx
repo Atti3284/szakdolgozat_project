@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navigation from './Navigation';
 import Sidebar from './Sidebar';
+import { useAuth } from '../context/AuthContext';
 import { CheckCircle2, Circle, Play, Clock } from 'lucide-react';
 
 export default function CoursePage() {
   // 1. Kiszedjük az URL-ből az ID-t (pl. /course/1 -> courseId = 1)
   const { courseId } = useParams();
+  const { currentUser } = useAuth();
   
   // 2. Állapotok (States) létrehozása
   const [lessons, setLessons] = useState([]); // Itt tároljuk a PHP-ból jött leckéket
@@ -31,7 +33,7 @@ export default function CoursePage() {
   // 4. Lecke állapotának frissítése (Update - POST kérés a PHP-nak)
   const toggleLessonComplete = () => {
     const currentLesson = lessons[selectedLesson];
-    if (!currentLesson) return;
+    if (!currentLesson || !currentUser) return;
 
     // Szigorú összehasonlítás (Number-ré alakítva a biztonság kedvéért)
     const currentStatus = Number(currentLesson.completed);
@@ -43,7 +45,9 @@ export default function CoursePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         lessonId: currentLesson.id,
-        completed: newStatus
+        completed: newStatus,
+        uid: currentUser.uid,
+        courseId: courseId
       })
     })
     .then(res => res.json())

@@ -3,14 +3,18 @@ import Navigation from './Navigation';
 import Sidebar from './Sidebar';
 import CourseCard from './CourseCard';
 import { Search } from 'lucide-react'; // Importálunk egy kereső ikont
+import { useAuth } from '../context/AuthContext';
 
 export default function MyCourses() {
+  const { currentUser } =useAuth();
   const [courses, setCourses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState(""); // Kereséshez
 
   useEffect(() => {
-    fetch('http://localhost/edulearn_api/get_courses.php')
+    if (!currentUser?.uid) return;
+
+    fetch(`http://localhost/edulearn_api/get_my_enrolled_courses.php?uid=${currentUser.uid}`)
       .then(response => response.json())
       .then(data => {
         setCourses(data);
@@ -20,7 +24,7 @@ export default function MyCourses() {
         console.error('Hiba:', error);
         setIsLoading(false);
       });
-  }, []);
+  }, [currentUser]);
 
   // Szűrés a keresőmező alapján
   const filteredCourses = courses.filter(course =>
@@ -39,12 +43,12 @@ export default function MyCourses() {
               <p className="text-gray-600">Itt találod az összes kurzust, amire jelentkeztél.</p>
             </div>
 
-            {/* KERESŐMEZŐ - Ez nagyon jól mutat a szakdolgozatban (UI/UX) */}
+            {/* KERESŐMEZŐ */}
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
-                placeholder="Search courses..."
+                placeholder="Keresés a kurzusaim között..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -57,15 +61,15 @@ export default function MyCourses() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCourses.map(course => (
-                <CourseCard key={course.id} {...course} />
-              ))}
-            </div>
-          )}
-          
-          {filteredCourses.length === 0 && !isLoading && (
-            <div className="text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
-              <p className="text-gray-500">Nem találtunk ilyen nevű kurzust.</p>
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map(course => (
+                  <CourseCard key={course.id} {...course} />
+                ))
+              ) : (
+                <div className="col-span-full text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
+                   <p className="text-gray-500">Még nem iratkoztál fel egy kurzusra sem, vagy nincs találat.</p>
+                </div>
+              )}
             </div>
           )}
         </main>
