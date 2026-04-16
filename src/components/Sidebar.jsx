@@ -1,4 +1,4 @@
-import { FileText, MessageSquare, Grid } from 'lucide-react';
+import { FileText, MessageSquare, Search } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Sidebar() {
@@ -6,7 +6,7 @@ export default function Sidebar() {
   const location = useLocation();
 
   const menuItems = [
-    { icon: Grid, label: 'All Courses', path: '/all-courses' },
+    { icon: Search, label: 'All Courses', path: '/all-courses' },
     { icon: FileText, label: 'Assignments', path: '/assignments' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
   ];
