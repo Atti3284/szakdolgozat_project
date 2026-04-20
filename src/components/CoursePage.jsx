@@ -154,7 +154,7 @@ export default function CoursePage() {
                   <button 
                     onClick={toggleLessonComplete}
                     className={`px-8 py-3 rounded-xl font-semibold transition-all shadow-md ${
-                      lessons[selectedLesson]?.completed === 1
+                      Number(lessons[selectedLesson]?.completed) === 1
                         ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200' 
                         : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
                     }`}
@@ -162,8 +162,20 @@ export default function CoursePage() {
                     {Number(lessons[selectedLesson]?.completed) === 1 ? 'Completed ✓' : 'Mark as Completed'}
                   </button>
                   
-                  <button className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl transition-all">
-                    Next Lesson →
+                  <button 
+                    onClick={() => {
+                      if (selectedLesson < lessons.length - 1) {
+                        setSelectedLesson(selectedLesson + 1);
+                      }
+                    }}
+                    disabled={selectedLesson === lessons.length - 1}
+                    className={`px-8 py-3 rounded-xl transition-all border ${
+                      selectedLesson === lessons.length - 1
+                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                        : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-200 shadow-sm'
+                    }`}
+                  >
+                    {selectedLesson === lessons.length - 1 ? 'Utolsó lecke' : 'Next Lesson →'}
                   </button>
                 </div>
               </div>
