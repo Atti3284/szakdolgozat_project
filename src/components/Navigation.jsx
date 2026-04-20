@@ -94,10 +94,13 @@ export default function Navigation() {
                   </span>
                 )}
               </div>
+            </div>
 
-              {/* --- DROP DOWN ABLAK --- */}
-              {isProfileOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-50">
+            {/* --- DROP DOWN ABLAK --- */}
+            {isProfileOpen && (
+              <div className="absolute right-0 top-full pt-2 w-48 z-[60]">
+
+                <div className="bg-white border border-gray-200 rounded-xl shadow-lg py-2">
                   {isGuest ? (
                     <button 
                       onClick={() => { logout(); navigate('/login'); }} 
@@ -125,8 +128,9 @@ export default function Navigation() {
                     </>
                   )}   
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+            
           </div>
         </div>
       </div>
