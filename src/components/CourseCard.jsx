@@ -3,15 +3,8 @@ import { Clock, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseCard({
-  id,
-  title,
-  instructor,
-  progress, // Ez most már a PHP-tól jövő számolt érték (vagy null)
-  students,
-  color,
-  imageUrl,
-  totalLessons, // Ezt is átadjuk a PHP-ból
-  isEnrolled // Ezt is megkapjuk a PHP-tól
+  id, title, instructor, progress, students, color, imageUrl, totalLessons, isEnrolled,
+  showProgress = true
 }) {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -84,22 +77,29 @@ export default function CourseCard({
         {/* --- INTERAKTÍV RÉSZ KEZDETE --- */}
         <div className="mb-4 min-h-[50px] flex flex-col justify-center">
           {isEnrolled ? (
-            /* HA FEL VAN IRATKOZVA: Progress Bar */
-            progress !== null ? (
-              <>
-                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-                  <span>Progress</span>
-                  <span className="font-bold text-blue-600">{progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </>
+            showProgress ? (
+              /* HA FEL VAN IRATKOZVA ÉS MUTATJUK A PROGRESSET (Dashboard, My Courses) */
+              progress !== null ? (
+                <>
+                  <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                    <span>Progress</span>
+                    <span className="font-bold text-blue-600">{progress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                   <div
+                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                     style={{ width: `${progress}%` }}
+                   />
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-gray-400 italic text-center">Nincs még tananyag</p>
+              )
             ) : (
-              <p className="text-xs text-gray-400 italic text-center">Nincs még tananyag</p>
+              /* HA NINCS FELIRATKOZVA, DE NEM MUATJUK A PROGRESSET (All Courses) */
+              <button disabled className="w-full dg-green-50 text-green-700 py-2 px-4 rounded-lg font-semibold border border-green-200 cursor-default">
+                ✓ Már feliratkozva
+              </button>
             )
           ) : (
             /* HA NINCS FELIRATKOZVA: Feliratkozás gomb */
