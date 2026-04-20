@@ -11,15 +11,6 @@ export default function AllCourses() {
 
   useEffect(() => {
 
-    const handleCardClick = () => {
-      if (currentUser?.dbData?.role === 'guest') {
-        alert("A kurzus megtekintéséhez kérjük, jelentkezz be!");
-        navigate('/login');
-        return;
-      }
-      navigate(`/course/${id}`);
-    };
-
     const fetchAllCourses = async () => {
       setIsLoading(true);
 

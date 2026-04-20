@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navigation from './Navigation';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import CourseCard from './CourseCard';
 import { BookOpen, CheckCircle } from 'lucide-react';
@@ -7,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [courses, setCourses] = useState([]);
   const [stats, setStats] = useState({ totalCourses: 0, completedLessons: 0 });
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +31,7 @@ useEffect(() => {
 
       // 2. STATISZTIKÁK LEKÉRÉSE
       try {
-        const res = await fetch('http://localhost/edulearn_api/get_stats.php');
+        const res = await fetch(`http://localhost/edulearn_api/get_stats.php?uid=${currentUser.uid}`);
         if (res.ok) {
           const data = await res.json();
           setStats(data);

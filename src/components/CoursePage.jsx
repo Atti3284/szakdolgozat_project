@@ -17,8 +17,13 @@ export default function CoursePage() {
 
   // 3. A HOOK: Ez fut le, amikor az oldal betöltődik
   useEffect(() => {
+    // Ha még nincs betöltve a user, ne küldjön hibás kérést
+    if (!currentUser?.uid) return;
+
     // Megszólítjuk a PHP-t, és elküldjük neki, melyik kurzus leckéi kellenek
-    fetch(`http://localhost/edulearn_api/get_lessons.php?id=${courseId}`)
+    fetch(`http://localhost/edulearn_api/get_lessons.php?id=${courseId}&uid${currentUser.uid}`,{
+      cache: 'no-store'
+    })
       .then(response => response.json())
       .then(data => {
         setLessons(data);    // Elmentjük a leckéket a state-be
@@ -28,7 +33,7 @@ export default function CoursePage() {
         console.error("Hiba a leckék betöltésekor:", error);
         setIsLoading(false);
       });
-  }, [courseId]); // Ha megváltozik az ID az URL-ben, fusson le újra
+  }, [courseId, currentUser]); // Ha megváltozik az ID az URL-ben, fusson le újra
 
   // 4. Lecke állapotának frissítése (Update - POST kérés a PHP-nak)
   const toggleLessonComplete = () => {
