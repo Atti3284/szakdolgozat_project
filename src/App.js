@@ -3,7 +3,7 @@ import { Routes, Route, BrowserRouter as Router, Navigate } from 'react-router-d
 import { useAuth, AuthProvider } from './context/AuthContext';
 
 // Komponensek importálása
-import Dashboard from './components/Dashboard'; // Kiszervezzük a főoldalt
+import Dashboard from './components/Dashboard';
 import CoursePage from './components/CoursePage';
 import Calendar from './components/Calendar';
 import Messages from './components/Messages';
@@ -12,6 +12,7 @@ import MyCourses from './components/MyCourses';
 import AllCourses from './components/AllCourses';
 import Login from './components/Login';
 import Register from './components/Register';
+import CreateCourse from './components/CreateCourse';
 
 function AppRoutes() {
   const { currentUser, loading } = useAuth();
@@ -54,6 +55,9 @@ function AppRoutes() {
       <Route path="/assignments" element={isRealUser ? <Assignments /> : <Navigate to="/login" /> } />
       <Route path="/messages" element={isRealUser ? <Messages /> : <Navigate to="/login" /> } />
       <Route path="/calendar" element={isRealUser ? <Calendar /> : <Navigate to="/login" /> } />
+
+      {/* CSAK TANÁROKNAK */}
+      <Route path="/create-course" element={isRealUser && currentUser?.dbData?.role === 'teacher' ? <CreateCourse /> : <Navigate to="/" /> } />
 
       {/* 404 */}
       <Route path="*" element={<Navigate to="/" />} />

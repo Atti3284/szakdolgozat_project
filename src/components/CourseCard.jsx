@@ -72,7 +72,6 @@ export default function CourseCard({
       {/* Course Content */}
       <div className="p-5">
         <h3 className="text-lg text-gray-900 mb-2 line-clamp-2 font-semibold">{title}</h3>
-        <p className="text-sm text-gray-600 mb-4">{instructor}</p>
 
         <p className="text-sm text-gray-600 mb-4">
            {currentUser?.uid === instructor_uid ? "Saját kurzusod" : instructor}

@@ -21,7 +21,7 @@ export default function CoursePage() {
     if (!currentUser?.uid) return;
 
     // Megszólítjuk a PHP-t, és elküldjük neki, melyik kurzus leckéi kellenek
-    fetch(`http://localhost/edulearn_api/get_lessons.php?id=${courseId}&uid${currentUser.uid}`,{
+    fetch(`http://localhost/edulearn_api/get_lessons.php?id=${courseId}&uid=${currentUser.uid}`,{
       cache: 'no-store'
     })
       .then(response => response.json())
