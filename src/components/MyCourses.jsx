@@ -14,7 +14,11 @@ export default function MyCourses() {
   useEffect(() => {
     if (!currentUser?.uid) return;
 
-    fetch(`http://localhost/edulearn_api/get_my_enrolled_courses.php?uid=${currentUser.uid}`)
+    const url = currentUser.dbData.role === 'teacher' 
+      ? `http://localhost/edulearn_api/get_teacher_courses.php?uid=${currentUser.uid}`
+      : `http://localhost/edulearn_api/get_my_enrolled_courses.php?uid=${currentUser.uid}`;
+
+    fetch(url)
       .then(response => response.json())
       .then(data => {
         setCourses(data);

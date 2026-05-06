@@ -3,7 +3,7 @@ import { Clock, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function CourseCard({
-  id, title, instructor, progress, students, color, imageUrl, totalLessons, isEnrolled,
+  id, title, instructor, instructor_uid, progress, students, color, imageUrl, totalLessons, isEnrolled,
   showProgress = true
 }) {
   const navigate = useNavigate();
@@ -74,9 +74,17 @@ export default function CourseCard({
         <h3 className="text-lg text-gray-900 mb-2 line-clamp-2 font-semibold">{title}</h3>
         <p className="text-sm text-gray-600 mb-4">{instructor}</p>
 
+        <p className="text-sm text-gray-600 mb-4">
+           {currentUser?.uid === instructor_uid ? "Saját kurzusod" : instructor}
+        </p>
+
         {/* --- INTERAKTÍV RÉSZ KEZDETE --- */}
         <div className="mb-4 min-h-[50px] flex flex-col justify-center">
-          {isEnrolled ? (
+          {currentUser?.dbData?.role === 'teacher' ? (
+            <button className="w-full bg-gray-100 text-gray-600 py-2 px-4 rounded-lg font-semibold border border-gray-200 cursor-default">
+              Oktatói nézet
+            </button>
+          ) : isEnrolled ? (
             showProgress ? (
               /* HA FEL VAN IRATKOZVA ÉS MUTATJUK A PROGRESSET (Dashboard, My Courses) */
               progress !== null ? (

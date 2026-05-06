@@ -33,7 +33,11 @@ function AppRoutes() {
     <Routes>
       {/* ALAPÉRTELMEZETT ÚTVONAL */}
       <Route path="/" element={
-        isRealUser ? <Navigate to="/dashboard" /> : (isGuest ? <Navigate to="/all-courses" /> : <Navigate to="/login" />)
+        isRealUser ? (
+          currentUser?.dbData?.role === 'teacher' ? <Navigate to="/my-courses" /> : <Navigate to="/dashboard" />
+        ) : (
+          isGuest ? <Navigate to="/all-courses" /> : <Navigate to="/login" />
+        )
       } />
       
       {/* PUBLIKUS ÚTVONALAK */}

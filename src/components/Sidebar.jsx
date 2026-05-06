@@ -1,11 +1,16 @@
-import { FileText, MessageSquare, Search } from 'lucide-react';
+import { FileText, MessageSquare, Search, Home, BookOpen, Layout } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser } = useAuth();
 
   const menuItems = [
+    // Csak akkor mutatjuk a Dashboardot, ha nem tanár
+    ...(currentUser?.dbData?.role !== 'teacher' ? [{ icon: Home, label: 'Dashboard', path: '/dashboard' }] : []),
+    { icon: BookOpen, label: 'My Courses', path: '/my-courses' },
     { icon: Search, label: 'All Courses', path: '/all-courses' },
     { icon: FileText, label: 'Assignments', path: '/assignments' },
     { icon: MessageSquare, label: 'Messages', path: '/messages' },
