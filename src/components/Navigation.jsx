@@ -25,6 +25,8 @@ export default function Navigation() {
   }`;
 
   const isGuest = currentUser?.dbData?.role === 'guest';
+  const isTeacher = currentUser?.dbData?.role === 'teacher';
+  const disableDashboard = isGuest || isTeacher;
 
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-10">
@@ -42,8 +44,8 @@ export default function Navigation() {
           {/* Navigation Links */}
           <div className="hidden md:flex items-center gap-8">
             <button 
-              onClick={() => !isGuest && navigate('/dashboard')}
-              className={navButtonStyle(!isGuest)}>
+              onClick={() => !disableDashboard && navigate('/dashboard')}
+              className={navButtonStyle(!disableDashboard)}>
               Dashboard
             </button>
             <button 
