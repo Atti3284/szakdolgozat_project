@@ -1,185 +1,162 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Navigation from './Navigation';
 import Sidebar from './Sidebar';
-import { useAuth } from '../context/AuthContext';
-import { CheckCircle2, Circle, Play, Clock } from 'lucide-react';
+import { CheckCircle, Circle, ArrowLeft, Trash2, Plus, BookOpen } from 'lucide-react';
 
 export default function CoursePage() {
-  // 1. Kiszedjük az URL-ből az ID-t (pl. /course/1 -> courseId = 1)
   const { courseId } = useParams();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   
-  // 2. Állapotok (States) létrehozása
-  const [lessons, setLessons] = useState([]); // Itt tároljuk a PHP-ból jött leckéket
-  const [selectedLesson, setSelectedLesson] = useState(0);
+  const [course, setCourse] = useState(null);
+  const [lessons, setLessons] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // ÚJ ÁLLAPOTOK
+  const [activeLesson, setActiveLesson] = useState(null); // Ezt a leckét látjuk éppen
+  const [newLessonTitle, setNewLessonTitle] = useState("");
+  const [newLessonContent, setNewLessonContent] = useState(""); // Tartalom a létrehozáshoz
 
-  // 3. A HOOK: Ez fut le, amikor az oldal betöltődik
+  const isTeacher = currentUser && course && currentUser.uid === course.instructor_uid;
+
   useEffect(() => {
-    // Ha még nincs betöltve a user, ne küldjön hibás kérést
-    if (!currentUser?.uid) return;
+    fetchCourseData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, currentUser]);
 
-    // Megszólítjuk a PHP-t, és elküldjük neki, melyik kurzus leckéi kellenek
-    fetch(`http://localhost/edulearn_api/get_lessons.php?id=${courseId}&uid=${currentUser.uid}`,{
-      cache: 'no-store'
-    })
-      .then(response => response.json())
-      .then(data => {
-        setLessons(data);    // Elmentjük a leckéket a state-be
-        setIsLoading(false); // Leállítjuk a töltésjelzőt
-      })
-      .catch(error => {
-        console.error("Hiba a leckék betöltésekor:", error);
-        setIsLoading(false);
-      });
-  }, [courseId, currentUser]); // Ha megváltozik az ID az URL-ben, fusson le újra
-
-  // 4. Lecke állapotának frissítése (Update - POST kérés a PHP-nak)
-  const toggleLessonComplete = () => {
-    const currentLesson = lessons[selectedLesson];
-    if (!currentLesson || !currentUser) return;
-
-    // Szigorú összehasonlítás (Number-ré alakítva a biztonság kedvéért)
-    const currentStatus = Number(currentLesson.completed);
-    // Ha 1 (true), akkor 0 (false) lesz, és fordítva
-    const newStatus = currentStatus === 1 ? 0 : 1;
-
-    fetch('http://localhost/edulearn_api/update_lesson.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lessonId: currentLesson.id,
-        completed: newStatus,
-        uid: currentUser.uid,
-        courseId: courseId
-      })
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.status === 'success') {
-        // Lokális frissítés, hogy azonnal látszódjon a változás a pipánál
-        const updatedLessons = [...lessons];
-        updatedLessons[selectedLesson].completed = newStatus;
-        setLessons(updatedLessons);
+  const fetchCourseData = async () => {
+    try {
+      const res = await fetch(`http://localhost/edulearn_api/get_course_details.php?course_id=${courseId}&uid=${currentUser?.uid || ''}`);
+      const data = await res.json();
+      setCourse(data.course);
+      setLessons(data.lessons);
+      // Ha vannak leckék, alapból az elsőt jelöljük ki
+      if (data.lessons.length > 0 && !activeLesson) {
+        setActiveLesson(data.lessons[0]);
       }
-    })
-    .catch(err => console.error("Hiba a mentéskor:", err));
+    } catch (error) {
+      console.error("Hiba:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
+  const handleAddLesson = async () => {
+    if (!newLessonTitle.trim()) return;
+    try {
+      const res = await fetch('http://localhost/edulearn_api/add_lesson.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          course_id: courseId,
+          title: newLessonTitle,
+          content: newLessonContent // Most már a tartalmat is elküldjük!
+        })
+      });
+      if (res.ok) {
+        setNewLessonTitle("");
+        setNewLessonContent("");
+        fetchCourseData();
+      }
+    } catch (error) {
+      console.error("Hiba a hozzáadáskor:", error);
+    }
+  };
+
+  // ... (delete és toggleProgress marad a régi)
+
+  if (isLoading) return <div className="p-10 text-center">Betöltés...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
+    <div className="flex h-screen bg-gray-50">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navigation />
+        
+        <main className="flex-1 overflow-y-auto p-6">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 mb-6 hover:text-blue-600 transition-colors">
+            <ArrowLeft size={20} /> Vissza a kurzusokhoz
+          </button>
 
-      <div className="flex">
-        <Sidebar />
-
-        <main className="flex-1">
-          {/* Kurzus címe (egyelőre statikus, vagy lekérhetjük egy másik API-ból) */}
-          <div className="bg-white border-b border-gray-200 px-8 py-6">
-            <h1 className="text-2xl text-gray-900 mb-2">Course Lessons</h1>
-            <p className="text-gray-600">ID: {courseId} kurzus tartalma</p>
-          </div>
-
-          <div className="flex h-[calc(100vh-185px)]">
-            {/* Bal oldali lecke lista */}
-            <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
-              <div className="p-4">
-                <h2 className="text-lg text-gray-900 mb-4">Course Content</h2>
-                <div className="space-y-2">
-                  {lessons.length > 0 ? (
-                    lessons.map((lesson, index) => (
-                      <button
-                        key={lesson.id}
-                        onClick={() => setSelectedLesson(index)}
-                        className={`w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left ${
-                          selectedLesson === index ? 'bg-blue-50 border border-blue-200' : 'hover:bg-gray-50'
-                        }`}
-                      >
-                        {/* Pipa ikon állapottól függően */}
-                        {parseInt(lesson.completed) === 1 ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
-                        )}
-
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 mb-1 truncate">{lesson.title}</div>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Clock className="w-3 h-3" />
-                            <span>{lesson.duration}</span>
-                          </div>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 italic">Nincsenek leckék ehhez a kurzushoz.</p>
-                  )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* BAL OLDAL: LECKE TARTALMA (A lényeg!) */}
+            <div className="lg:col-span-2 space-y-6">
+              {activeLesson ? (
+                <div className="bg-white rounded-2xl shadow-sm border p-8">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-4">{activeLesson.title}</h1>
+                  <div className="prose max-w-none text-gray-600 leading-relaxed">
+                    {/* Itt jelenik meg a tartalom! */}
+                    {activeLesson.content ? (
+                       activeLesson.content.split('\n').map((line, i) => <p key={i} className="mb-4">{line}</p>)
+                    ) : (
+                      <p className="italic text-gray-400">Ehhez a leckéhez még nincs tartalom.</p>
+                    )}
+                  </div>
                 </div>
+              ) : (
+                <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
+                  <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-500">Válassz egy leckét a folytatáshoz!</h2>
+                </div>
+              )}
+            </div>
+
+            {/* JOBB OLDAL: LECKELISTÁK ÉS HALADÁS */}
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-2xl shadow-sm border">
+                <h3 className="font-bold text-gray-800 mb-4">Tananyag</h3>
+                <div className="space-y-3">
+                  {lessons.map((lesson) => (
+                    <div 
+                      key={lesson.id} 
+                      onClick={() => setActiveLesson(lesson)} // Kattintásra ez lesz az aktív
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                        activeLesson?.id === lesson.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50 border-gray-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {lesson.completed ? <CheckCircle className="text-green-500" size={20} /> : <Circle className="text-gray-300" size={20} />}
+                        <span className={`font-medium ${activeLesson?.id === lesson.id ? 'text-blue-700' : 'text-gray-700'}`}>
+                          {lesson.title}
+                        </span>
+                      </div>
+                      {isTeacher && (
+                        <button onClick={(e) => { e.stopPropagation(); /* delete hívás */ }} className="text-gray-400 hover:text-red-500">
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* TANÁRI FUNKCIÓ: Létrehozás tartalommal */}
+                {isTeacher && (
+                  <div className="mt-8 pt-6 border-t space-y-3">
+                    <h4 className="font-semibold text-sm text-gray-600">Új lecke hozzáadása</h4>
+                    <input 
+                      value={newLessonTitle} 
+                      onChange={(e) => setNewLessonTitle(e.target.value)}
+                      placeholder="Lecke címe..." 
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                    />
+                    <textarea 
+                      value={newLessonContent}
+                      onChange={(e) => setNewLessonContent(e.target.value)}
+                      placeholder="Lecke tartalma..."
+                      rows="4"
+                      className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-sm"
+                    />
+                    <button onClick={handleAddLesson} className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2">
+                      <Plus size={20} /> Hozzáadás
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Jobb oldali tartalom (Videó helye) */}
-            <div className="flex-1 overflow-y-auto bg-white">
-              <div className="p-8 max-2-4xl mx-auto">
-                {/* Videó "lejátszó" (Placeholder) */}
-                <div className="bg-gray-900 rounded-2xl aspect-video flex items-center justify-center mb-8 shadow-2xl relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-                  <button className="flex items-center justify-center w-20 h-20 bg-blue-600 hover:bg-blue-700 text-white rounded-full transition-transform hover:scale-110 z-10 shadow-lg">
-                    <Play className="w-10 h-10 ml-1 fill-current" />
-                  </button>
-                </div>
-
-                {/* Lecke információk */}
-                <div className="mb-8">
-                  <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                    {lessons[selectedLesson]?.title || "Válassz egy leckét"}
-                  </h2>
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    Üdvözöljük ebben a leckében! Itt mélyebben megismerkedhetsz a témával. 
-                    A haladásodat bármikor rögzítheted az alábbi gombbal, ami frissíti az adatbázist.
-                  </p>
-                </div>
-                
-                {/* Akció gombok */}
-                <div className="flex items-center gap-4 pt-6 border-t border-gray-100">
-                  <button 
-                    onClick={toggleLessonComplete}
-                    className={`px-8 py-3 rounded-xl font-semibold transition-all shadow-md ${
-                      Number(lessons[selectedLesson]?.completed) === 1
-                        ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200' 
-                        : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
-                    }`}
-                  >
-                    {Number(lessons[selectedLesson]?.completed) === 1 ? 'Completed ✓' : 'Mark as Completed'}
-                  </button>
-                  
-                  <button 
-                    onClick={() => {
-                      if (selectedLesson < lessons.length - 1) {
-                        setSelectedLesson(selectedLesson + 1);
-                      }
-                    }}
-                    disabled={selectedLesson === lessons.length - 1}
-                    className={`px-8 py-3 rounded-xl transition-all border ${
-                      selectedLesson === lessons.length - 1
-                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                        : 'bg-white hover:bg-gray-50 text-gray-700 border-gray-200 shadow-sm'
-                    }`}
-                  >
-                    {selectedLesson === lessons.length - 1 ? 'Utolsó lecke' : 'Next Lesson →'}
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </main>
       </div>
