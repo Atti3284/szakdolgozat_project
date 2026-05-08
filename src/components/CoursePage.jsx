@@ -65,7 +65,29 @@ export default function CoursePage() {
     }
   };
 
-  // ... (delete és toggleProgress marad a régi)
+  const handleDeleteLesson = async (lessonId) => {
+    if (!window.confirm("Biztosan törlöd ezt a leckét?")) return;
+
+    try {
+      const res = await fetch('http://localhost/edulearn_api/delete_lesson.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lesson_id: lessonId }),
+      });
+
+      const text = await res.text(); // először sima szövegként olvassuk
+      console.log("Törlés válasz:", text);
+      const data = JSON.parse(text); // majd feldolgozzuk JSON-ként
+      if (data.status === "success") {
+        alert("Lecke sikeresen törölve!");
+        fetchCourseData();
+      } else {
+        alert(data.message || "Hiba történt a törlés során.");
+      }
+    } catch (error) {
+      console.error("Hiba a lecke törlésekor:", error);
+    }
+  };
 
   if (isLoading) return <div className="p-10 text-center">Betöltés...</div>;
 
@@ -124,7 +146,13 @@ export default function CoursePage() {
                         </span>
                       </div>
                       {isTeacher && (
-                        <button onClick={(e) => { e.stopPropagation(); /* delete hívás */ }} className="text-gray-400 hover:text-red-500">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteLesson(lesson.id);
+                          }}
+                          className="text-gray-400 hover:text-red-500"
+                        >
                           <Trash2 size={16} />
                         </button>
                       )}
