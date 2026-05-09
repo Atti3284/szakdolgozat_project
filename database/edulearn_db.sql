@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2026. Máj 08. 14:22
+-- Létrehozás ideje: 2026. Máj 09. 11:34
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -29,6 +29,7 @@ USE `edulearn_db`;
 -- Tábla szerkezet ehhez a táblához `courses`
 --
 -- Létrehozva: 2026. Máj 06. 10:21
+-- Utolsó frissítés: 2026. Máj 09. 09:18
 --
 
 DROP TABLE IF EXISTS `courses`;
@@ -51,15 +52,6 @@ CREATE TABLE `courses` (
 --
 
 INSERT INTO `courses` (`id`, `title`, `instructor`, `instructor_uid`, `students`, `color`, `imageUrl`) VALUES
-(1, 'React alapok PHP-val', 'Saját Magad', 'A_TE_FIREBASE_UID-D', 1, 'bg-green-500', 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400'),
-(2, 'Szakdolgozat Projekt', 'AI Mentor', NULL, 1, 'bg-indigo-500', 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=400'),
-(3, 'Bevezetés a Mesterséges Intelligenciába', 'Dr. Kovács Antal', NULL, 1240, 'bg-purple-600', 'https://images.unsplash.com/photo-1677442136019-21780ecad995'),
-(4, 'Modern Webfejlesztés React alapokon', 'Szabó Bence', NULL, 850, 'bg-cyan-500', 'https://images.unsplash.com/photo-1633356122544-f134324a6cee'),
-(5, 'UX/UI Design Alapelvek', 'Németh Zsófia', NULL, 2100, 'bg-pink-500', 'https://images.unsplash.com/photo-1586717791821-3f44a563dc4c'),
-(6, 'Adatbázis tervezés és SQL haladóknak', 'Varga László', NULL, 560, 'bg-indigo-700', 'https://images.unsplash.com/photo-1544383023-53fca3936a2e'),
-(7, 'Python programozás az alapoktól', 'Tóth Eszter', NULL, 3400, 'bg-yellow-500', 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5'),
-(8, 'Kiberbiztonság a gyakorlatban', 'Fekete Péter', NULL, 920, 'bg-red-600', 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b'),
-(9, 'Digitális Marketing Stratégiák', 'Kiss Dóra', NULL, 1100, 'bg-emerald-500', 'https://images.unsplash.com/photo-1460925895917-afdab827c52f'),
 (10, 'Teszt Project', 'Ecsedi Béla', '6mxfiQeLe4a4tslG2Ka423DA9fi1', 0, 'bg-blue-600', NULL),
 (11, 'Masodik Teszt', 'Ecsedi Béla', '6mxfiQeLe4a4tslG2Ka423DA9fi1', 0, 'bg-purple-600', NULL);
 
@@ -69,6 +61,7 @@ INSERT INTO `courses` (`id`, `title`, `instructor`, `instructor_uid`, `students`
 -- Tábla szerkezet ehhez a táblához `enrollments`
 --
 -- Létrehozva: 2026. Ápr 16. 10:01
+-- Utolsó frissítés: 2026. Máj 09. 09:19
 --
 
 DROP TABLE IF EXISTS `enrollments`;
@@ -96,17 +89,7 @@ CREATE TABLE `enrollments` (
 --
 
 INSERT INTO `enrollments` (`id`, `user_uid`, `course_id`, `enrolled_at`, `status`, `last_activity`) VALUES
-(1, 'v9Tyym7ZwUUJjcdU4EraBsSBOr02', 1, '2026-04-16 09:31:35', 'active', '2026-04-20 18:11:48'),
-(2, 'v9Tyym7ZwUUJjcdU4EraBsSBOr02', 2, '2026-04-16 09:31:43', 'active', '2026-04-16 10:01:43'),
-(6, 'v9Tyym7ZwUUJjcdU4EraBsSBOr02', 3, '2026-04-16 12:37:46', 'active', '2026-04-16 12:37:46'),
-(10, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 1, '2026-04-16 21:07:46', 'active', '2026-05-06 19:50:40'),
-(11, '40EhY9fwUnWXuM3fjsEVZY6KrAf2', 2, '2026-04-20 17:14:55', 'active', '2026-04-20 17:14:55'),
-(12, '40EhY9fwUnWXuM3fjsEVZY6KrAf2', 1, '2026-04-20 17:14:59', 'active', '2026-04-20 18:10:22'),
-(13, '40EhY9fwUnWXuM3fjsEVZY6KrAf2', 3, '2026-04-20 17:15:06', 'active', '2026-04-20 17:15:06'),
-(14, 'v9Tyym7ZwUUJjcdU4EraBsSBOr02', 7, '2026-04-20 18:18:17', 'active', '2026-04-20 18:18:17'),
-(15, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 7, '2026-04-20 18:18:47', 'active', '2026-04-20 18:18:47'),
-(16, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 2, '2026-04-20 18:59:55', 'active', '2026-04-20 18:59:55'),
-(17, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 10, '2026-05-06 19:24:16', 'active', '2026-05-06 19:24:16');
+(19, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 10, '2026-05-09 09:19:20', 'active', '2026-05-09 09:19:26');
 
 -- --------------------------------------------------------
 
@@ -114,7 +97,7 @@ INSERT INTO `enrollments` (`id`, `user_uid`, `course_id`, `enrolled_at`, `status
 -- Tábla szerkezet ehhez a táblához `lessons`
 --
 -- Létrehozva: 2026. Máj 08. 12:14
--- Utolsó frissítés: 2026. Máj 08. 12:16
+-- Utolsó frissítés: 2026. Máj 09. 09:17
 --
 
 DROP TABLE IF EXISTS `lessons`;
@@ -138,11 +121,7 @@ CREATE TABLE `lessons` (
 --
 
 INSERT INTO `lessons` (`id`, `course_id`, `title`, `content`, `duration`, `completed`) VALUES
-(1, 1, 'Introduction to HTML', NULL, '12 min', 1),
-(2, 1, 'CSS Fundamentals', NULL, '18 min', 0),
-(3, 1, 'JavaScript Basics', NULL, '25 min', 0),
-(4, 10, 'teszt', 'ez egy teszt szöveg akar lenni', NULL, 0),
-(5, 10, 'teszt2', 'ez a szöveg a második teszthez tartozik amit mindjárt kitölök{}&{#@', NULL, 0);
+(4, 10, 'teszt', 'ez egy teszt szöveg akar lenni', NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -184,6 +163,7 @@ INSERT INTO `users` (`id`, `firebase_uid`, `username`, `email`, `full_name`, `ro
 -- Tábla szerkezet ehhez a táblához `user_progress`
 --
 -- Létrehozva: 2026. Ápr 20. 16:46
+-- Utolsó frissítés: 2026. Máj 09. 09:19
 --
 
 DROP TABLE IF EXISTS `user_progress`;
@@ -207,11 +187,7 @@ CREATE TABLE `user_progress` (
 --
 
 INSERT INTO `user_progress` (`id`, `user_uid`, `lesson_id`, `completed_at`) VALUES
-(8, '40EhY9fwUnWXuM3fjsEVZY6KrAf2', 1, '2026-04-20 17:15:23'),
-(9, '40EhY9fwUnWXuM3fjsEVZY6KrAf2', 2, '2026-04-20 17:15:25'),
-(31, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 1, '2026-04-20 19:05:16'),
-(33, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 2, '2026-04-20 20:32:42'),
-(43, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 3, '2026-05-06 19:50:40');
+(48, 'UAaZ0VnVmIhJejkx3u7WjaDuRXE3', 4, '2026-05-09 09:19:26');
 
 --
 -- Indexek a kiírt táblákhoz
@@ -268,13 +244,13 @@ ALTER TABLE `courses`
 -- AUTO_INCREMENT a táblához `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT a táblához `lessons`
 --
 ALTER TABLE `lessons`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT a táblához `users`
@@ -286,7 +262,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT a táblához `user_progress`
 --
 ALTER TABLE `user_progress`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- Megkötések a kiírt táblákhoz
