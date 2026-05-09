@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { Clock, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+// Kurzus kártya komponens – megjelenik a Dashboard-on, MyCourses-on és AllCourses-on is
+// showProgress prop: true esetén haladássávot mutat, false esetén a feliratkozás gombot
 export default function CourseCard({
   id, title, instructor, instructor_uid, progress, students, color, imageUrl, totalLessons, isEnrolled,
   showProgress = true
@@ -9,9 +11,9 @@ export default function CourseCard({
   const navigate = useNavigate();
   const { currentUser } = useAuth();
 
-  //Vendégellenőrző segédfüggvény
+  // Vendégellenőrzés: vendég nem tud feliratkozni, csak böngészni
   const checkGuest = () => {
-    if (currentUser?.dbData?.role === 'guest'){
+    if (currentUser?.dbData?.role === 'guest') {
       alert("Ez a funkció nem elérhető. Kérjük, jelentkezzen be!");
       navigate('/login');
       return true;
@@ -19,8 +21,10 @@ export default function CourseCard({
     return false;
   };
 
+  // Feliratkozás kezelése: POST kérés az API-hoz, majd oldal újratöltés
   const handleEnroll = async (e) => {
-    e.stopPropagation(); // Megakadályozza, hogy a kártyára való kattintás is lefusson
+    // Megakadályozzuk, hogy a kártyára kattintás is lefusson (navigáció helyett feliratkozás)
+    e.stopPropagation();
     if (checkGuest()) return;
 
     console.log("Jelentkezés folyamatban...", currentUser.uid);
@@ -36,9 +40,10 @@ export default function CourseCard({
       });
       
       const result = await response.json();
-      if(result.status === 'success') {
+      if (result.status === 'success') {
         alert("Sikeresen feliratkoztál!");
-        window.location.reload(); 
+        // Oldal újratöltése, hogy a feliratkozás állapota frissüljön
+        window.location.reload();
       } else {
         alert(result.message);
       }
@@ -48,13 +53,14 @@ export default function CourseCard({
   };
 
   return (
+    // Kártyára kattintva a kurzus részletező oldalára navigál (vendégnek blokkolva)
     <div
       onClick={() => {
         if (!checkGuest()) navigate(`/course/${id}`);
       }}
       className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
     >
-      {/* Kurzus Kép */}
+      {/* KURZUS BORÍTÓKÉP – ha van URL, azt mutatja, egyébként a cím első betűjét */}
       <div className={`h-40 ${color || 'bg-blue-600'} relative`}>
         {imageUrl ? (
           <img
@@ -63,53 +69,59 @@ export default function CourseCard({
             className="w-full h-full object-cover opacity-90"
           />
         ) : (
+          // Placeholder: a kurzus neve első betűjéből generált egyszerű ikon
           <div className="w-full h-full flex items-center justify-center text-white opacity-20 text-4xl font-bold">
             {title.charAt(0)}
           </div>
         )}
       </div>
 
-      {/* Course Content */}
+      {/* KURZUS TARTALOM */}
       <div className="p-5">
         <h3 className="text-lg text-gray-900 mb-2 line-clamp-2 font-semibold">{title}</h3>
 
+        {/* Oktató neve – ha ez a saját kurzusunk, "Saját kurzusod" felirat jelenik meg */}
         <p className="text-sm text-gray-600 mb-4">
-           {currentUser?.uid === instructor_uid ? "Saját kurzusod" : instructor}
+          {currentUser?.uid === instructor_uid ? "Saját kurzusod" : instructor}
         </p>
 
-        {/* --- INTERAKTÍV RÉSZ KEZDETE --- */}
+        {/* INTERAKTÍV RÉSZ – szerepkör és feliratkozási állapot alapján különböző tartalom */}
         <div className="mb-4 min-h-[50px] flex flex-col justify-center">
           {currentUser?.dbData?.role === 'teacher' ? (
+            // Tanárnak nem kell feliratkozás gomb, csak jelzés hogy oktatói nézetben van
             <button className="w-full bg-gray-100 text-gray-600 py-2 px-4 rounded-lg font-semibold border border-gray-200 cursor-default">
               Oktatói nézet
             </button>
           ) : isEnrolled ? (
             showProgress ? (
-              /* HA FEL VAN IRATKOZVA ÉS MUTATJUK A PROGRESSET (Dashboard, My Courses) */
+              // DIÁK + FEL VAN IRATKOZVA + HALADÁS LÁTHATÓ (Dashboard, MyCourses)
               progress !== null ? (
                 <>
+                  {/* Haladás százalékos megjelenítése */}
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                     <span>Progress</span>
                     <span className="font-bold text-blue-600">{progress}%</span>
                   </div>
+                  {/* Haladássáv vizuálisan */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                   <div
-                     className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-                     style={{ width: `${progress}%` }}
-                   />
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${progress}%` }}
+                    />
                   </div>
                 </>
               ) : (
+                // Feliratkozott, de még nincs lecke a kurzusban
                 <p className="text-xs text-gray-400 italic text-center">Nincs még tananyag</p>
               )
             ) : (
-              /* HA NINCS FELIRATKOZVA, DE NEM MUATJUK A PROGRESSET (All Courses) */
+              // DIÁK + FEL VAN IRATKOZVA + HALADÁS ELREJTVE (AllCourses oldal)
               <button disabled className="w-full dg-green-50 text-green-700 py-2 px-4 rounded-lg font-semibold border border-green-200 cursor-default">
                 ✓ Már feliratkozva
               </button>
             )
           ) : (
-            /* HA NINCS FELIRATKOZVA: Feliratkozás gomb */
+            // DIÁK + NINCS FELIRATKOZVA: feliratkozás gomb megjelenítése
             <button
               onClick={handleEnroll}
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-sm"
@@ -118,9 +130,8 @@ export default function CourseCard({
             </button>
           )}
         </div>
-        {/* --- INTERAKTÍV RÉSZ VÉGE --- */}
 
-        {/* Course Meta */}
+        {/* KURZUS METAADATOK – leckék és tanulók száma */}
         <div className="flex items-center gap-4 text-sm text-gray-600 border-t pt-4">
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />

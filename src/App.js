@@ -14,14 +14,16 @@ import Login from './components/Login';
 import Register from './components/Register';
 import CreateCourse from './components/CreateCourse';
 
+// Az útvonalakat kezelő belső komponens (azért van külön, hogy hozzáférjen az AuthContext-hez)
 function AppRoutes() {
   const { currentUser, loading } = useAuth();
 
-  //Segédváltozó a jogusultságok egyszerűbb kezeléséhez
+  // Segédváltozók a jogosultságok egyszerűbb kezeléséhez
   const isGuest = currentUser?.dbData?.role === 'guest';
   const isLoggedIn = !!currentUser; // true, ha van bármilyen user (vendég is)
   const isRealUser = isLoggedIn && !isGuest; // true, ha regisztrált user
 
+  // Betöltés közben egy pörgő animációt mutatunk
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -32,7 +34,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      {/* ALAPÉRTELMEZETT ÚTVONAL */}
+      {/* ALAPÉRTELMEZETT ÚTVONAL: szerepkör alapján irányít tovább */}
       <Route path="/" element={
         isRealUser ? (
           currentUser?.dbData?.role === 'teacher' ? <Navigate to="/my-courses" /> : <Navigate to="/dashboard" />
@@ -41,14 +43,14 @@ function AppRoutes() {
         )
       } />
       
-      {/* PUBLIKUS ÚTVONALAK */}
+      {/* PUBLIKUS ÚTVONALAK: csak bejelentkezés előtt elérhetők */}
       <Route path="/login" element={!isLoggedIn ? <Login /> : <Navigate to="/" /> } />
       <Route path="/register" element={!isLoggedIn ? <Register /> : <Navigate to="/" /> } />
       
-      {/* VENDÉGEKNEK IS ELÉRHETŐ */}
+      {/* VENDÉGEKNEK IS ELÉRHETŐ: bejelentkezés szükséges, de vendég is megtekintheti */}
       <Route path="/all-courses" element={isLoggedIn ? <AllCourses /> : <Navigate to="/login" /> } />
 
-      {/* CSAK REGISZTRÁLT FELHASZNÁLÓKNAK (Védett a vendégektől is) */}
+      {/* CSAK REGISZTRÁLT FELHASZNÁLÓKNAK: vendégtől és kijelentkezve is védett */}
       <Route path="/dashboard" element={isRealUser ? <Dashboard /> : <Navigate to="/login" /> } />
       <Route path="/my-courses" element={isRealUser ? <MyCourses /> : <Navigate to="/login" /> } />
       <Route path="/course/:courseId" element={isRealUser ? <CoursePage /> : <Navigate to="/login" /> } />
@@ -56,16 +58,16 @@ function AppRoutes() {
       <Route path="/messages" element={isRealUser ? <Messages /> : <Navigate to="/login" /> } />
       <Route path="/calendar" element={isRealUser ? <Calendar /> : <Navigate to="/login" /> } />
 
-      {/* CSAK TANÁROKNAK */}
+      {/* CSAK TANÁROKNAK: szerepkörellenőrzés szükséges */}
       <Route path="/create-course" element={isRealUser && currentUser?.dbData?.role === 'teacher' ? <CreateCourse /> : <Navigate to="/" /> } />
 
-      {/* 404 */}
+      {/* 404 – ismeretlen útvonal esetén visszairányít a főoldalra */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
 
-// A fő App komponens, ami körbeöleli az egészet a Provider-rel
+// A fő App komponens, ami körbeöleli az egészet az AuthProvider-rel
 function App() {
   return (
     <AuthProvider>

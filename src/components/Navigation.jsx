@@ -6,8 +6,10 @@ import { useAuth } from '../context/AuthContext';
 export default function Navigation() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAuth();
+  // Profilmenü nyitva/zárva állapota
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+  // Kijelentkezés kezelése – Firebase logout után a login oldalra navigál
   const handleLogout = async () => {
     try {
       await logout();
@@ -17,15 +19,17 @@ export default function Navigation() {
     }
   };
 
-  //Segédfüggvény a stílushoz és a kattintáshoz
+  // Segédfüggvény a navigációs gombok stílusához – letiltott gomb szürkített és nem kattintható
   const navButtonStyle = (isActive) => `transition-colors text-sm font-medium ${
-    !isActive 
-      ? 'text-gray-300 cursor-not-allowed' 
+    !isActive
+      ? 'text-gray-300 cursor-not-allowed'
       : 'text-gray-700 hover:text-blue-600'
   }`;
 
+  // Szerepkör segédváltozók – a navigáció és a dropdown tartalma ezektől függ
   const isGuest = currentUser?.dbData?.role === 'guest';
   const isTeacher = currentUser?.dbData?.role === 'teacher';
+  // Dashboard gomb le van tiltva vendégnek és tanárnak egyaránt
   const disableDashboard = isGuest || isTeacher;
 
   return (
@@ -33,7 +37,7 @@ export default function Navigation() {
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
 
-          {/* Logo */}
+          {/* LOGO – kattintásra a dashboardra navigál */}
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/dashboard')}>
             <div className="flex items-center justify-center w-10 h-10 bg-blue-600 rounded-lg">
               <BookOpen className="w-6 h-6 text-white" />
@@ -41,77 +45,79 @@ export default function Navigation() {
             <span className="text-xl text-gray-900">EduLearn</span>
           </div>
 
-          {/* Navigation Links */}
+          {/* NAVIGÁCIÓS LINKEK – szerepkörtől függően egyes gombok le vannak tiltva */}
           <div className="hidden md:flex items-center gap-8">
-            <button 
+            {/* Dashboard gomb – vendégnek és tanárnak le van tiltva */}
+            <button
               onClick={() => !disableDashboard && navigate('/dashboard')}
               className={navButtonStyle(!disableDashboard)}>
               Dashboard
             </button>
-            <button 
-              onClick={() =>  !isGuest && navigate('/my-courses')}
+            {/* My Courses gomb – vendégnek letiltva */}
+            <button
+              onClick={() => !isGuest && navigate('/my-courses')}
               className={navButtonStyle(!isGuest)}>
               My Courses
             </button>
-            <button 
+            {/* Calendar gomb – vendégnek letiltva */}
+            <button
               onClick={() => !isGuest && navigate('/calendar')}
               className={navButtonStyle(!isGuest)}>
               Calendar
             </button>
           </div>
 
-          {/* Profile és Dropdown */}
+          {/* PROFIL SZEKCIÓ – értesítési csengő és profil dropdown */}
           <div className="flex items-center gap-4">
+            {/* Értesítési csengő (jelenleg dekoratív, funkció nélkül) */}
             <button className="p-2 text-gray-400 hover:text-gray-600">
               <Bell className="w-5 h-5" />
             </button>
-            
+
+            {/* PROFIL GOMB – kattintásra megnyílik/bezáródik a dropdown */}
             <div
               className="flex items-center gap-3 pl-4 border-l cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setIsProfileOpen(!isProfileOpen)}>
 
               <div className="text-right hidden sm:block">
+                {/* Felhasználó neve: teljes név > email előtagja > "Vendég" sorrendben */}
                 <p className="text-sm font-bold text-gray-900 leading-tight">
-                  {/* 1. Ha van teljes név, azt írjuk ki. 
-                      2. Ha nincs, vesszük az emailt, és levágjuk a @ utáni részt. 
-                      3. Ha semmi nincs, akkor marad a 'Tanuló' */}
                   {currentUser?.dbData?.full_name || (currentUser?.email ? currentUser.email.split('@')[0] : 'Vendég')}
                 </p>
-                
+                {/* Szerepkör megjelenítése magyarul */}
                 <p className="text-xs text-gray-500 capitalize">
-                  {/* Ha a role 'student' vagy nincs megadva, írjuk ki hogy 'Diák' 
-                      Ha 'teacher', akkor 'Tanár' */}
                   {currentUser?.dbData?.role === 'teacher' ? 'Tanár' : (isGuest ? 'Vendég' : 'Diák')}
                 </p>
               </div>
 
-              {/* Profilkép vagy Monogram */}
+              {/* PROFILKÉP VAGY MONOGRAM – ha van feltöltött kép, azt mutatja, egyébként a névből generált betűt */}
               <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border border-gray-200 overflow-hidden">
                 {currentUser?.dbData?.avatar_url ? (
                   <img src={currentUser.dbData.avatar_url} alt="Profile" className="w-full h-full object-cover" />
                 ) : (
+                  // Monogram: a teljes név vagy email első nagy betűje
                   <span className="text-blue-600 font-bold">
-                    {/* Elsőnek a full_name első betűje, ha nincs, akkor az email első betűje */}
                     {(currentUser?.dbData?.full_name || currentUser?.email || 'V').charAt(0).toUpperCase()}
                   </span>
                 )}
               </div>
             </div>
 
-            {/* --- DROP DOWN ABLAK --- */}
+            {/* PROFIL DROPDOWN MENÜ – csak akkor látható, ha isProfileOpen true */}
             {isProfileOpen && (
               <div className="absolute right-0 top-full pt-2 w-48 z-[60]">
-
                 <div className="bg-white border border-gray-200 rounded-xl shadow-lg py-2">
                   {isGuest ? (
-                    <button 
-                      onClick={() => { logout(); navigate('/login'); }} 
+                    // Vendégnek csak a bejelentkezés gomb jelenik meg
+                    <button
+                      onClick={() => { logout(); navigate('/login'); }}
                       className="w-full flex items-center gap-3 px-4 py-3 text-sm text-blue-600 hover:bg-blue-50 transition-colors font-semibold"
                     >
-                      <LogOut className="w-5 h-5"/> 
+                      <LogOut className="w-5 h-5" />
                       <span>Bejelentkezés</span>
                     </button>
-                  ) : (  
+                  ) : (
+                    // Regisztrált felhasználónak teljes menü: profil, beállítások, kijelentkezés
                     <>
                       <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                         <User className="w-4 h-4" /> Profilom
@@ -119,8 +125,9 @@ export default function Navigation() {
                       <button className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
                         <Settings className="w-4 h-4" /> Beállítások
                       </button>
+                      {/* Elválasztó vonal a kijelentkezés gomb felett */}
                       <div className="border-t border-gray-100 mt-2 pt-2">
-                        <button 
+                        <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                         >
@@ -128,16 +135,16 @@ export default function Navigation() {
                         </button>
                       </div>
                     </>
-                  )}   
+                  )}
                 </div>
               </div>
             )}
-            
+
           </div>
         </div>
       </div>
 
-
+      {/* HÁTTÉR OVERLAY – kattintásra bezárja a dropdown menüt */}
       {isProfileOpen && (
         <div
           className="fixed inset-0 z-[40]"

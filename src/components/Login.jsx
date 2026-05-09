@@ -3,15 +3,20 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
+  // Email és jelszó mezők állapota
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Bejelentkezési és vendég belépési funkciók az AuthContext-ből
   const { login, loginAsGuest } = useAuth();
   const navigate = useNavigate();
 
+  // Bejelentkezési form elküldésének kezelése
   async function handleSubmit(e) {
     e.preventDefault();
     try {
+      // Firebase autentikáció hívása az AuthContext login funkción keresztül
       await login(email, password);
+      // Sikeres bejelentkezés után a diák a dashboardra kerül
       navigate('/dashboard');
     } catch (error) {
       alert("Hiba a bejelentkezésnél: " + error.message);
@@ -22,11 +27,13 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Edulearn Belépés</h2>
-        
+
+        {/* BEJELENTKEZÉSI FORM */}
         <form onSubmit={handleSubmit}>
+          {/* Email mező */}
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2">Email</label>
-            <input 
+            <input
               type="email"
               placeholder="pelda@email.com"
               className="w-full p-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -34,10 +41,11 @@ export default function Login() {
               required
             />
           </div>
-        
+
+          {/* Jelszó mező */}
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2">Jelszó</label>
-            <input 
+            <input
               type="password"
               placeholder="••••••••"
               className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -45,12 +53,14 @@ export default function Login() {
               required
             />
           </div>
-        
+
+          {/* Belépés gomb – form elküldést indít */}
           <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
             Belépés
           </button>
         </form>
 
+        {/* ELVÁLASZTÓ VONAL "Vagy" felirattal */}
         <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <span className="w-full border-t border-gray-300"></span>
@@ -60,7 +70,8 @@ export default function Login() {
           </div>
         </div>
 
-        <button 
+        {/* VENDÉG BELÉPÉS GOMB – regisztráció nélküli böngészéshez */}
+        <button
           type="button"
           onClick={() => { loginAsGuest(); navigate('/all-courses'); }}
           className="w-full py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
@@ -68,7 +79,7 @@ export default function Login() {
           Folytatás vendégként
         </button>
 
-        {/* REGISZTRÁCIÓS LINK */}
+        {/* REGISZTRÁCIÓS LINK – új fiók létrehozásához */}
         <div className="mt-6 text-center border-t pt-4">
           <p className="text-sm text-gray-600">
             Még nincs fiókod?{' '}

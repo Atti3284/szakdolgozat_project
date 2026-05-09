@@ -5,15 +5,20 @@ import Sidebar from './Sidebar';
 import { useAuth } from '../context/AuthContext';
 
 export default function CreateCourse() {
+  // Bejelentkezett tanár adatai (nevéhez és UID-jához szükséges)
   const { currentUser } = useAuth();
   const navigate = useNavigate();
 
+  // Kurzus cím állapota
   const [title, setTitle] = useState('');
+  // Borítókép URL állapota (opcionális)
   const [imageUrl, setImageUrl] = useState('');
+  // Kiválasztott háttérszín Tailwind osztályként
   const [color, setColor] = useState('bg-blue-600');
+  // Elküldés folyamatban – gomb letiltásához és visszajelzéshez
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Színválasztó opciók Tailwind osztályokkal
+  // Elérhető színválasztók – Tailwind osztály értékek és megjelenítési nevük
   const colorOptions = [
     { label: 'Kék', value: 'bg-blue-600' },
     { label: 'Zöld', value: 'bg-green-500' },
@@ -23,8 +28,10 @@ export default function CreateCourse() {
     { label: 'Indigó', value: 'bg-indigo-600' }
   ];
 
+  // Kurzus létrehozásának kezelése – POST kérés az API-hoz
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Üres cím esetén nem folytatjuk
     if (!title.trim()) return alert("A kurzus címe kötelező!");
 
     setIsSubmitting(true);
@@ -35,9 +42,11 @@ export default function CreateCourse() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
+          // Ha nincs teljes névben adat, az email @ előtti részét használjuk
           instructor: currentUser.dbData.full_name || currentUser.email.split('@')[0],
           instructor_uid: currentUser.uid,
           color,
+          // Ha nincs megadva kép URL, null értéket küldünk (háttérszín lesz látható)
           imageUrl: imageUrl.trim() !== '' ? imageUrl : null
         })
       });
@@ -46,7 +55,8 @@ export default function CreateCourse() {
 
       if (result.status === 'success') {
         alert("Kurzus sikeresen létrehozva!");
-        navigate('/my-courses'); // Visszavisszük a kurzusaihoz
+        // Sikeres létrehozás után visszairányítjuk a tanár saját kurzusaihoz
+        navigate('/my-courses');
       } else {
         alert("Hiba: " + result.message);
       }
@@ -54,6 +64,7 @@ export default function CreateCourse() {
       console.error("Hiba a mentés során:", error);
       alert("Hálózati hiba történt.");
     } finally {
+      // Mindig visszaállítjuk a gomb állapotát, akár sikeres, akár hibás volt a kérés
       setIsSubmitting(false);
     }
   };
@@ -68,9 +79,10 @@ export default function CreateCourse() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Új Kurzus Létrehozása</h1>
             <p className="text-gray-600 mb-8">Oszd meg a tudásod a diákokkal! Töltsd ki az alábbi űrlapot az új kurzusod indításához.</p>
 
+            {/* KURZUS LÉTREHOZÓ FORM */}
             <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              
-              {/* Kurzus Címe */}
+
+              {/* KURZUS CÍME – kötelező mező */}
               <div className="mb-6">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Kurzus Címe *</label>
                 <input
@@ -83,7 +95,7 @@ export default function CreateCourse() {
                 />
               </div>
 
-              {/* Borítókép URL */}
+              {/* BORÍTÓKÉP URL – opcionális, ha nincs megadva, a kiválasztott szín lesz a háttér */}
               <div className="mb-6">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Borítókép (URL) - opcionális</label>
                 <input
@@ -96,11 +108,12 @@ export default function CreateCourse() {
                 <p className="text-xs text-gray-500 mt-1">Másolj be egy kép linket, vagy hagyd üresen egy alapértelmezett színes háttérhez.</p>
               </div>
 
-              {/* Színválasztó */}
+              {/* SZÍNVÁLASZTÓ – csak akkor aktív vizuálisan, ha nincs borítókép megadva */}
               <div className="mb-8">
                 <label className="block text-sm font-bold text-gray-700 mb-2">Téma Színe (ha nincs kép)</label>
                 <div className="flex gap-4">
                   {colorOptions.map((opt) => (
+                    // Kiválasztott szín esetén gyűrű animáció jelzi az aktív állapotot
                     <button
                       key={opt.value}
                       type="button"
@@ -112,8 +125,9 @@ export default function CreateCourse() {
                 </div>
               </div>
 
-              {/* Gombok */}
+              {/* FORM GOMBOK – mentés és mégsem */}
               <div className="flex gap-4 border-t pt-6">
+                {/* Mentés gomb – elküldés közben letiltva és szövege megváltozik */}
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -121,6 +135,7 @@ export default function CreateCourse() {
                 >
                   {isSubmitting ? 'Mentés folyamatban...' : 'Kurzus Létrehozása'}
                 </button>
+                {/* Mégsem gomb – visszairányít a kurzuslistához mentés nélkül */}
                 <button
                   type="button"
                   onClick={() => navigate('/my-courses')}

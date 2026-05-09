@@ -6,33 +6,42 @@ import Sidebar from './Sidebar';
 import { CheckCircle, Circle, ArrowLeft, Trash2, Plus, BookOpen } from 'lucide-react';
 
 export default function CoursePage() {
+  // Az URL-ből kinyert kurzus azonosító (pl. /course/5 esetén courseId = "5")
   const { courseId } = useParams();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  
+
+  // Kurzus alapadatai (cím, oktató, stb.)
   const [course, setCourse] = useState(null);
+  // A kurzushoz tartozó leckék listája (haladási állapottal együtt)
   const [lessons, setLessons] = useState([]);
+  // Betöltési állapot – amíg true, "Betöltés..." szöveg látható
   const [isLoading, setIsLoading] = useState(true);
-  
+
+  // Jelenleg megnyitott lecke (a jobb oldalon jelenik meg a tartalma)
   const [activeLesson, setActiveLesson] = useState(null);
+  // Új lecke hozzáadásához szükséges form mezők (csak tanárnak látható)
   const [newLessonTitle, setNewLessonTitle] = useState("");
   const [newLessonContent, setNewLessonContent] = useState("");
 
+  // Meghatározza, hogy az aktuális felhasználó az oktató-e (tanári funkciók megjelenítéséhez)
   const isTeacher = currentUser && course && currentUser.uid === course.instructor_uid;
 
+  // Kurzus adatainak lekérése az oldal betöltésekor és kurzusID változásakor
   useEffect(() => {
     fetchCourseData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId, currentUser]);
 
+  // Kurzus és leckék lekérése az API-ból (haladási adatokkal együtt)
   const fetchCourseData = async () => {
     try {
       const res = await fetch(`http://localhost/edulearn_api/get_course_details.php?course_id=${courseId}&uid=${currentUser?.uid || ''}`);
       const data = await res.json();
       setCourse(data.course);
       setLessons(data.lessons);
-      
-      // Ha vannak leckék, alapból az elsőt jelöljük ki
+
+      // Az első lecke automatikus kiválasztása, ha még nincs aktív lecke
       if (data.lessons.length > 0 && !activeLesson) {
         setActiveLesson(data.lessons[0]);
       }
@@ -43,7 +52,9 @@ export default function CoursePage() {
     }
   };
 
+  // Új lecke hozzáadása az adatbázisba (csak tanárnak elérhető)
   const handleAddLesson = async () => {
+    // Üres cím esetén nem küldünk el semmit
     if (!newLessonTitle.trim()) return;
     try {
       const res = await fetch('http://localhost/edulearn_api/add_lesson.php', {
@@ -56,6 +67,7 @@ export default function CoursePage() {
         })
       });
       if (res.ok) {
+        // Sikeres mentés után töröljük a form mezőket és frissítjük a listát
         setNewLessonTitle("");
         setNewLessonContent("");
         fetchCourseData();
@@ -65,6 +77,7 @@ export default function CoursePage() {
     }
   };
 
+  // Lecke törlése megerősítés után (csak az oktató törölheti)
   const handleDeleteLesson = async (lessonId) => {
     if (!window.confirm("Biztosan törlöd ezt a leckét?")) return;
     try {
@@ -76,13 +89,15 @@ export default function CoursePage() {
       const data = await res.json();
       if (data.status === "success") {
         fetchCourseData();
-        if (activeLesson?.id === lessonId) setActiveLesson(null); // Ha az aktívat töröltük, ürítsük ki
+        // Ha az aktív (éppen megnyitott) leckét töröltük, megszüntetjük a kiválasztást
+        if (activeLesson?.id === lessonId) setActiveLesson(null);
       }
     } catch (error) {
       console.error("Hiba a lecke törlésekor:", error);
     }
   };
 
+  // Lecke befejezettségi állapotának váltása (pipa be/ki) – diáknak elérhető
   const toggleLesson = async (lessonId, currentStatus) => {
     try {
       const res = await fetch('http://localhost/edulearn_api/update_lesson.php', {
@@ -96,9 +111,9 @@ export default function CoursePage() {
         })
       });
       if (res.ok) {
-        // Frissítjük a listát
+        // Optimista UI frissítés: azonnal frissítjük a listát, nem kell újra lekérni az API-t
         setLessons(prev => prev.map(l => l.id === lessonId ? { ...l, completed: !currentStatus } : l));
-        // SZINKRONIZÁLJUK az activeLesson-t is, hogy a gomb színe azonnal megváltozzon!
+        // Az aktív lecke állapotát is szinkronizáljuk, hogy a gomb azonnal reagáljon
         if (activeLesson?.id === lessonId) {
           setActiveLesson(prev => ({ ...prev, completed: !currentStatus }));
         }
@@ -108,9 +123,10 @@ export default function CoursePage() {
     }
   };
 
+  // Betöltés közben egyszerű szöveges jelzés
   if (isLoading) return <div className="p-10 text-center">Betöltés...</div>;
 
-  // Segédváltozó a "Next Lesson" gombhoz (hanyadik az aktív lecke a listában)
+  // Segédváltozó a "Next Lesson" gombhoz – meghatározza az aktív lecke sorszámát a listában
   const activeLessonIndex = lessons.findIndex(l => l.id === activeLesson?.id);
 
   return (
@@ -118,44 +134,49 @@ export default function CoursePage() {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Navigation />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
+          {/* VISSZA GOMB – az előző oldalra navigál */}
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-gray-600 mb-6 hover:text-blue-600 transition-colors">
             <ArrowLeft size={20} /> Vissza a kurzusokhoz
           </button>
 
+          {/* KÉTOSZLOPOS ELRENDEZÉS: bal oldal = lecke tartalom, jobb oldal = leckélista */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            {/* BAL OLDAL: LECKE TARTALMA ÉS GOMBOK */}
+
+            {/* BAL OLDAL: AZ AKTÍV LECKE TARTALMA ÉS NAVIGÁCIÓS GOMBOK */}
             <div className="lg:col-span-2 space-y-6">
               {activeLesson ? (
                 <div className="bg-white rounded-2xl shadow-sm border p-8 flex flex-col min-h-[400px]">
+                  {/* Lecke cím */}
                   <h1 className="text-3xl font-bold text-gray-800 mb-6">{activeLesson.title}</h1>
-                  
-                  {/* Lecke szövege */}
+
+                  {/* Lecke szövege – soronként paragrafusokba tördelve */}
                   <div className="prose max-w-none text-gray-600 leading-relaxed flex-1">
                     {activeLesson.content ? (
-                       activeLesson.content.split('\n').map((line, i) => <p key={i} className="mb-4">{line}</p>)
+                      activeLesson.content.split('\n').map((line, i) => <p key={i} className="mb-4">{line}</p>)
                     ) : (
                       <p className="italic text-gray-400">Ehhez a leckéhez még nincs tartalom.</p>
                     )}
                   </div>
 
-                  {/* AKCIÓ GOMBOK (Visszahozva és bekötve az új logikába) */}
-                  {!isTeacher && ( // Tanárnak ezek a gombok feleslegesek
+                  {/* AKCIÓ GOMBOK – csak diákoknak látható (tanárnak felesleges) */}
+                  {!isTeacher && (
                     <div className="flex items-center gap-4 pt-8 mt-4 border-t border-gray-100">
-                      <button 
+                      {/* Befejezettség jelölő gomb – állapottól függően zöld vagy kék */}
+                      <button
                         onClick={() => toggleLesson(activeLesson.id, activeLesson.completed)}
                         className={`px-8 py-3 rounded-xl font-semibold transition-all shadow-md ${
                           Number(activeLesson.completed) === 1
-                            ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200' 
+                            ? 'bg-green-100 text-green-700 border border-green-200 hover:bg-green-200'
                             : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg'
                         }`}
                       >
                         {Number(activeLesson.completed) === 1 ? 'Completed ✓' : 'Mark as Completed'}
                       </button>
-                      
-                      <button 
+
+                      {/* Következő lecke gomb – letiltva, ha ez az utolsó lecke */}
+                      <button
                         onClick={() => {
                           if (activeLessonIndex < lessons.length - 1) {
                             setActiveLesson(lessons[activeLessonIndex + 1]);
@@ -174,6 +195,7 @@ export default function CoursePage() {
                   )}
                 </div>
               ) : (
+                // Üres állapot: még nem választott leckét a felhasználó
                 <div className="bg-white rounded-2xl shadow-sm border p-12 text-center">
                   <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
                   <h2 className="text-xl font-semibold text-gray-500">Válassz egy leckét a folytatáshoz!</h2>
@@ -181,45 +203,54 @@ export default function CoursePage() {
               )}
             </div>
 
-            {/* JOBB OLDAL: LECKELISTÁK ÉS HALADÁS */}
+            {/* JOBB OLDAL: LECKELISTA ÉS HALADÁS */}
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border">
                 <h3 className="font-bold text-gray-800 mb-4">Tananyag</h3>
-                
-                {/* Haladás sáv diákoknak */}
+
+                {/* HALADÁS SÁV – csak diákoknak látható, ha van lecke */}
                 {!isTeacher && lessons.length > 0 && (
                   <div className="mb-6">
                     <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-                      <div 
-                        className="bg-green-500 h-2 rounded-full transition-all duration-500" 
+                      <div
+                        className="bg-green-500 h-2 rounded-full transition-all duration-500"
                         style={{ width: `${(lessons.filter(l => Number(l.completed) === 1).length / lessons.length) * 100}%` }}
                       ></div>
                     </div>
+                    {/* Befejezett / összes lecke száma szövegesen */}
                     <p className="text-xs text-gray-500 text-right">
                       {lessons.filter(l => Number(l.completed) === 1).length} / {lessons.length} kész
                     </p>
                   </div>
                 )}
 
+                {/* LECKE LISTA – kattintható elemek, aktív lecke kiemelve */}
                 <div className="space-y-3">
                   {lessons.map((lesson) => (
-                    <div 
-                      key={lesson.id} 
-                      onClick={() => setActiveLesson(lesson)} 
+                    <div
+                      key={lesson.id}
+                      onClick={() => setActiveLesson(lesson)}
                       className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
                         activeLesson?.id === lesson.id ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50 border-gray-100'
                       }`}
                     >
                       <div className="flex items-center gap-3">
+                        {/* Pipa ikon – diákok be/ki tudják kapcsolni (propagáció megállítva) */}
                         {!isTeacher && (
                           <button onClick={(e) => { e.stopPropagation(); toggleLesson(lesson.id, lesson.completed); }}>
-                            {Number(lesson.completed) === 1 ? <CheckCircle className="text-green-500" size={20} /> : <Circle className="text-gray-300" size={20} />}
+                            {Number(lesson.completed) === 1
+                              ? <CheckCircle className="text-green-500" size={20} />
+                              : <Circle className="text-gray-300" size={20} />
+                            }
                           </button>
                         )}
+                        {/* Lecke neve – aktív esetén kék színnel */}
                         <span className={`font-medium ${activeLesson?.id === lesson.id ? 'text-blue-700' : 'text-gray-700'}`}>
                           {lesson.title}
                         </span>
                       </div>
+
+                      {/* Törlés gomb – csak az oktató látja */}
                       {isTeacher && (
                         <button
                           onClick={(e) => {
@@ -235,23 +266,26 @@ export default function CoursePage() {
                   ))}
                 </div>
 
-                {/* TANÁRI FUNKCIÓ: Létrehozás tartalommal */}
+                {/* ÚJ LECKE HOZZÁADÁSA – csak az oktató számára látható form */}
                 {isTeacher && (
                   <div className="mt-8 pt-6 border-t space-y-3">
                     <h4 className="font-semibold text-sm text-gray-600">Új lecke hozzáadása</h4>
-                    <input 
-                      value={newLessonTitle} 
+                    {/* Lecke cím beviteli mező */}
+                    <input
+                      value={newLessonTitle}
                       onChange={(e) => setNewLessonTitle(e.target.value)}
-                      placeholder="Lecke címe..." 
+                      placeholder="Lecke címe..."
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
                     />
-                    <textarea 
+                    {/* Lecke tartalom beviteli mező (többsoros) */}
+                    <textarea
                       value={newLessonContent}
                       onChange={(e) => setNewLessonContent(e.target.value)}
                       placeholder="Lecke tartalma..."
                       rows="4"
                       className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none text-sm"
                     />
+                    {/* Hozzáadás gomb – elküldi az adatokat az API-nak */}
                     <button onClick={handleAddLesson} className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 flex items-center justify-center gap-2">
                       <Plus size={20} /> Hozzáadás
                     </button>

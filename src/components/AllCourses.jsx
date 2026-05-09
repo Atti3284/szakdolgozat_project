@@ -3,14 +3,19 @@ import Navigation from './Navigation';
 import Sidebar from './Sidebar';
 import CourseCard from './CourseCard';
 import { useAuth } from '../context/AuthContext';
-import { Search } from 'lucide-react'; // 1. IMPORTÁLTUK A KERESŐ IKONT
+import { Search } from 'lucide-react'; // Kereső ikon importálása
 
 export default function AllCourses() {
+  // Bejelentkezett felhasználó (vendég esetén is rendelkezik uid-val)
   const { currentUser } = useAuth();
+  // Az összes lekért kurzus listája
   const [courses, setCourses] = useState([]);
+  // Betöltési állapot – pörgő animáció megjelenítéséhez
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(""); // 2. KERESŐ ÁLLAPOT
+  // Keresőmező aktuális értéke – valós idejű szűréshez
+  const [searchTerm, setSearchTerm] = useState("");
 
+  // Összes kurzus lekérése az API-ból, felhasználói UID-dal (feliratkozás állapotához)
   useEffect(() => {
     const fetchAllCourses = async () => {
       setIsLoading(true);
@@ -28,7 +33,7 @@ export default function AllCourses() {
     fetchAllCourses();
   }, [currentUser]);
 
-  // 3. SZŰRÉS LOGIKA
+  // Valós idejű szűrés: csak azok a kurzusok jelennek meg, amelyek neve tartalmazza a keresett szöveget
   const filteredCourses = courses.filter(course =>
     course.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -39,19 +44,19 @@ export default function AllCourses() {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-8">
-          
-          {/* Címsor és Kereső */}
+
+          {/* FEJLÉC ÉS KERESŐMEZŐ – egymás mellett jelennek meg nagyobb képernyőn */}
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 Összes elérhető kurzus
               </h1>
               <p className="text-gray-600 mt-1">
-                  Válogass kedvedre és iratkozz fel új tananyagokra!
+                Válogass kedvedre és iratkozz fel új tananyagokra!
               </p>
             </div>
 
-            {/* KERESŐMEZŐ */}
+            {/* KERESŐMEZŐ – begépeléskor azonnal szűri a kurzuslistát */}
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -63,22 +68,25 @@ export default function AllCourses() {
             </div>
           </div>
 
+          {/* KURZUSLISTA – betöltés közben animáció, utána kártyák vagy üres állapot */}
           {isLoading ? (
+            // Betöltési animáció
             <div className="flex justify-center p-10">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredCourses.length > 0 ? (
-                  filteredCourses.map(course => (
-                      // 4. ITT KAPCSOLJUK KI A PROGRESST: showProgress={false}
-                      <CourseCard key={course.id} {...course} showProgress={false} />
-                  ))
-                ) : (
-                  <div className="col-span-full text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
-                     <p className="text-gray-500">Nincs találat a keresésre.</p>
-                  </div>
-                )}
+              {filteredCourses.length > 0 ? (
+                filteredCourses.map(course => (
+                  // showProgress={false}: ezen az oldalon nem mutatjuk a haladást, csak a feliratkozás gombot
+                  <CourseCard key={course.id} {...course} showProgress={false} />
+                ))
+              ) : (
+                // Üres állapot: nincs találat a keresési feltételre
+                <div className="col-span-full text-center p-12 bg-white rounded-xl border border-dashed border-gray-300">
+                  <p className="text-gray-500">Nincs találat a keresésre.</p>
+                </div>
+              )}
             </div>
           )}
         </main>
